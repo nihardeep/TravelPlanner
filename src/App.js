@@ -23,25 +23,25 @@ export default function TravelApp() {
   const destinations = [
     {
       name: 'Trips to Bali',
-      image: 'https://images.unsplash.com/photo-1537996594457-c4ab63289527?w=500&h=400&fit=crop',
+      image: 'https://images.pexels.com/photos/3714902/pexels-photo-3714902.jpeg?auto=compress&cs=tinysrgb&w=600',
       description: 'Tropical Paradise',
       color: 'from-orange-400 to-red-500'
     },
     {
       name: 'Trips to Kuala Lumpur',
-      image: 'https://images.unsplash.com/photo-1599661046289-e31897846bcc?w=500&h=400&fit=crop',
+      image: 'https://images.pexels.com/photos/1619317/pexels-photo-1619317.jpeg?auto=compress&cs=tinysrgb&w=600',
       description: 'Modern Metropolis',
       color: 'from-purple-400 to-pink-500'
     },
     {
       name: 'Trips to Bangkok',
-      image: 'https://images.unsplash.com/photo-1569163139394-de4798aa62b3?w=500&h=400&fit=crop',
+      image: 'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=600',
       description: 'City of Angels',
       color: 'from-yellow-400 to-orange-500'
     },
     {
       name: 'Trips to Singapore',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=500&h=400&fit=crop',
+      image: 'https://images.pexels.com/photos/1534993/pexels-photo-1534993.jpeg?auto=compress&cs=tinysrgb&w=600',
       description: 'Lion City',
       color: 'from-blue-400 to-cyan-500'
     }
