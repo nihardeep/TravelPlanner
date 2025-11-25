@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import {
-  Send,
-  Loader2,
-  MapPin,
-  Home,
-  Search,
-  MessageCircle,
-} from "lucide-react";
+// src/App.js
+// TravelPlanner - production-ready frontend
+// - Sends search POST to n8n webhook on Search click
+// - Chat requests go to /api/gemini (serverless) so your secret stays server-side
+// - If /api/gemini is not available, shows a friendly fallback response
+// - No client-side OpenAI/Gemini secret usage
+
+import React, { useState, useEffect, useRef } from "react";
+import { Send, Loader2, MapPin, Search, MessageCircle } from "lucide-react";
 
 export default function TravelApp() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -25,8 +25,9 @@ export default function TravelApp() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [apiKey, setApiKey] = useState(""); // <-- Gemini key
+  // DO NOT store production keys in the client. Use serverless endpoint instead.
   const [showSettings, setShowSettings] = useState(false);
+  const messageEndRef = useRef(null);
 
   const destinations = [
     {
@@ -34,30 +35,33 @@ export default function TravelApp() {
       image:
         "https://images.pexels.com/photos/3714902/pexels-photo-3714902.jpeg?auto=compress&cs=tinysrgb&w=600",
       description: "Tropical Paradise",
-      color: "from-orange-400 to-red-500",
     },
     {
       name: "Trips to Kuala Lumpur",
       image:
         "https://images.pexels.com/photos/1619317/pexels-photo-1619317.jpeg?auto=compress&cs=tinysrgb&w=600",
       description: "Modern Metropolis",
-      color: "from-purple-400 to-pink-500",
     },
     {
       name: "Trips to Bangkok",
       image:
         "https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=600",
       description: "City of Angels",
-      color: "from-yellow-400 to-orange-500",
     },
     {
       name: "Trips to Singapore",
       image:
         "https://images.pexels.com/photos/1534993/pexels-photo-1534993.jpeg?auto=compress&cs=tinysrgb&w=600",
       description: "Lion City",
-      color: "from-blue-400 to-cyan-500",
     },
   ];
+
+  useEffect(() => {
+    // scroll chat to bottom when messages change
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, currentPage]);
 
   const handleDestinationClick = (destination) => {
     setSelectedDestination(destination);
@@ -70,61 +74,133 @@ export default function TravelApp() {
     ]);
   };
 
-  const handleChatSubmit = async () => {
-    if (!input.trim() || loading) return;
-    if (!apiKey) {
-      alert("Please enter your Gemini API Key first.");
+  // When user clicks the Search button -> send webhook to n8n with search params
+  const handleSearchClick = async () => {
+    // Validate
+    if (!searchParams.destination) {
+      alert("Please select a destination before searching.");
       return;
     }
 
+    // Prepare payload
+    const payload = {
+      type: "travel_search",
+      destination: searchParams.destination,
+      adults: Number(searchParams.adults || 1),
+      rooms: Number(searchParams.rooms || 1),
+      timestamp: new Date().toISOString(),
+    };
+
+    // Send to your n8n webhook
+    try {
+      await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      // Non-blocking: log but still continue
+      console.error("n8n webhook error:", err);
+    }
+
+    // Optionally switch to chatbot page for a conversational flow
+    setSelectedDestination(searchParams.destination);
+    setCurrentPage("chatbot");
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: `Search initiated: ${payload.destination} — adults: ${payload.adults}, rooms: ${payload.rooms}`,
+      },
+    ]);
+  };
+
+  // Chat submit calls a server endpoint /api/gemini (serverless) — keep key server-side
+  const handleChatSubmit = async () => {
+    if (!input.trim() || loading) return;
+
     const userMessage = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
-
     setInput("");
     setLoading(true);
 
+    // Optionally send the user message also to n8n for logging or workflows
+    fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "user_message",
+        destination: selectedDestination,
+        message: userMessage.content,
+        timestamp: new Date().toISOString(),
+      }),
+    }).catch((err) => console.error("n8n webhook error:", err));
+
     try {
-      // Gemini API (Flash 1.5)
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
+      // Call serverless endpoint. Implement server-side at /api/gemini which uses your Gemini key.
+      const res = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert travel planner. Help plan trips to ${selectedDestination}.`,
+            },
+            ...messages,
+            userMessage,
+          ],
+          selectedDestination,
+        }),
+      });
+
+      if (!res.ok) {
+        // fallback friendly assistant message
+        const fallback = {
+          role: "assistant",
+          content:
+            "Sorry — the AI backend is not available right now. We'll respond manually or try again soon.",
+        };
+        setMessages((prev) => [...prev, fallback]);
+
+        // Send assistant fallback to n8n as well so your workflow can pick it up
+        fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `
-You are an expert travel planner for ${selectedDestination}.
-User message: ${input}
-
-Conversation so far:
-${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
-                  `,
-                  },
-                ],
-              },
-            ],
+            type: "assistant_message",
+            destination: selectedDestination,
+            message: fallback.content,
+            timestamp: new Date().toISOString(),
           }),
-        }
-      );
+        }).catch((err) => console.error("n8n webhook error:", err));
+      } else {
+        const data = await res.json();
+        const assistantText =
+          data?.choices?.[0]?.message?.content ??
+          data?.output ??
+          "Sorry, I couldn't generate a response.";
 
-      const data = await response.json();
+        const assistantMessage = { role: "assistant", content: assistantText };
+        setMessages((prev) => [...prev, assistantMessage]);
 
-      const assistantMessage = {
-        role: "assistant",
-        content:
-          data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-          "Sorry, I couldn't generate a response.",
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+        // Post assistant reply to n8n as well
+        fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "assistant_message",
+            destination: selectedDestination,
+            message: assistantMessage.content,
+            timestamp: new Date().toISOString(),
+          }),
+        }).catch((err) => console.error("n8n webhook error:", err));
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Chat error:", err);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Error: " + err.message },
+        { role: "assistant", content: `Error contacting AI: ${err.message}` },
       ]);
     } finally {
       setLoading(false);
@@ -138,7 +214,7 @@ ${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
     }
   };
 
-  // HOME PAGE UI
+  // Layout: Home page
   if (currentPage === "home") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -151,11 +227,25 @@ ${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
                   TravelMate
                 </h1>
               </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setShowSettings((s) => !s)}
+                  className="text-sm text-purple-200 hover:text-white"
+                >
+                  Settings
+                </button>
+                <button
+                  onClick={() => alert("This is a demo site")}
+                  className="bg-white bg-opacity-10 px-3 py-1 rounded text-white text-sm"
+                >
+                  Login
+                </button>
+              </div>
             </div>
           </div>
         </nav>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-16">
             <h2 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">
               Explore Southeast Asia
@@ -165,9 +255,9 @@ ${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
             </p>
 
             {/* Search Panel */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-2xl max-w-2xl mx-auto mb-12">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-2xl max-w-3xl mx-auto mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div className="md:col-span-2">
                   <label className="block text-white text-sm font-semibold mb-2">
                     Destination
                   </label>
@@ -190,163 +280,148 @@ ${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
                   </select>
                 </div>
 
-                {/* Adults */}
                 <div>
                   <label className="block text-white text-sm font-semibold mb-2">
                     Adults
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min={1}
                     value={searchParams.adults}
                     onChange={(e) =>
-                      setSearchParams({
-                        ...searchParams,
-                        adults: Number(e.target.value),
-                      })
+                      setSearchParams({ ...searchParams, adults: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg text-gray-800 font-medium"
+                    className="w-full px-4 py-3 rounded-lg text-gray-800 font-medium focus:ring-2 focus:ring-purple-300 outline-none"
                   />
                 </div>
 
-                {/* Rooms */}
                 <div>
                   <label className="block text-white text-sm font-semibold mb-2">
                     Rooms
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min={1}
                     value={searchParams.rooms}
                     onChange={(e) =>
-                      setSearchParams({
-                        ...searchParams,
-                        rooms: Number(e.target.value),
-                      })
+                      setSearchParams({ ...searchParams, rooms: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg text-gray-800 font-medium"
+                    className="w-full px-4 py-3 rounded-lg text-gray-800 font-medium focus:ring-2 focus:ring-purple-300 outline-none"
                   />
                 </div>
 
-                {/* Search Button */}
-                <div className="flex items-end">
+                <div className="flex items-center">
                   <button
-                    onClick={() =>
-                      alert(
-                        `Searching hotels in ${searchParams.destination} for ${searchParams.adults} adults and ${searchParams.rooms} rooms.`
-                      )
-                    }
-                    className="w-full flex justify-center items-center gap-2 bg-white text-purple-700 font-bold py-3 rounded-lg shadow-lg hover:bg-purple-50 transition"
+                    onClick={handleSearchClick}
+                    className="ml-2 flex items-center gap-2 px-6 py-3 rounded-lg bg-white text-purple-700 font-semibold hover:opacity-95 shadow"
                   >
-                    <Search className="w-5 h-5" />
-                    Search
+                    <Search className="w-5 h-5" /> Search
                   </button>
                 </div>
               </div>
             </div>
-
-            {/* Popular Destinations */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {destinations.map((d) => (
-                <div
-                  key={d.name}
-                  onClick={() => handleDestinationClick(d.name)}
-                  className={`cursor-pointer group`}
-                >
-                  <div
-                    className={`rounded-2xl overflow-hidden shadow-xl transition transform group-hover:scale-105 bg-gradient-to-br ${d.color}`}
-                  >
-                    <img
-                      src={d.image}
-                      alt={d.name}
-                      className="w-full h-48 object-cover opacity-90"
-                    />
-                    <div className="p-4 text-center text-white font-semibold">
-                      {d.name}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
-        </div>
+
+          {/* Destination cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {destinations.map((d) => (
+              <div
+                key={d.name}
+                onClick={() => handleDestinationClick(d.name)}
+                className="cursor-pointer rounded-2xl overflow-hidden shadow-lg transform hover:scale-105 transition duration-200"
+              >
+                <div
+                  className="h-48 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${d.image})`,
+                  }}
+                />
+                <div className="p-4 bg-gradient-to-r from-orange-400 to-red-400 text-white font-semibold text-lg text-center">
+                  {d.name.replace("Trips to ", "Trips to ")}
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
 
-  // CHATBOT PAGE UI
+  // CHATBOT PAGE
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
       <nav className="bg-black bg-opacity-60 backdrop-blur-md border-b border-purple-500 border-opacity-30 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <button
-              onClick={() => setCurrentPage("home")}
-              className="flex items-center gap-2 text-purple-300"
-            >
-              <Home className="w-5 h-5" /> Home
-            </button>
-
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="text-purple-300"
-            >
-              <MessageCircle className="w-6 h-6" />
-            </button>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-8 h-8 text-purple-400" />
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                TravelMate
+              </h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setCurrentPage("home")}
+                className="text-white bg-purple-700 px-3 py-1 rounded"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => setShowSettings((s) => !s)}
+                className="text-sm text-purple-200 hover:text-white"
+              >
+                Settings
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
-      {showSettings && (
-        <div className="bg-slate-800 p-4">
-          <label className="block mb-2">Gemini API Key:</label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Enter your Gemini API Key"
-            className="w-full px-4 py-2 rounded bg-slate-700 text-white"
-          />
-        </div>
-      )}
-
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`p-4 rounded-xl ${
-              msg.role === "assistant"
-                ? "bg-purple-700 bg-opacity-40"
-                : "bg-slate-700"
-            }`}
-          >
-            {msg.content}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1 w-full">
+        <div className="bg-black bg-opacity-40 rounded-2xl p-6 min-h-[50vh]">
+          <div className="mb-4">
+            <h2 className="text-2xl font-semibold text-white">
+              Chat — {selectedDestination || "General"}
+            </h2>
+            <p className="text-sm text-gray-300">
+              Ask me about itineraries, hotels, flights, and local tips.
+            </p>
           </div>
-        ))}
 
-        <div className="flex gap-2 mt-4">
-          <textarea
-            rows="2"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 px-4 py-2 rounded bg-slate-800 text-white"
-            placeholder="Ask something…"
-          ></textarea>
+          <div className="space-y-4 overflow-auto max-h-[55vh] pr-2">
+            {messages.map((m, idx) => (
+              <div
+                key={idx}
+                className={`p-3 rounded-lg max-w-[80%] ${
+                  m.role === "assistant" ? "bg-white text-black ml-0" : "bg-purple-700 text-white ml-auto"
+                }`}
+              >
+                <div className="text-sm whitespace-pre-line">{m.content}</div>
+              </div>
+            ))}
+            <div ref={messageEndRef} />
+          </div>
 
-          <button
-            onClick={handleChatSubmit}
-            disabled={loading}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white flex items-center gap-2"
-          >
-            {loading ? (
-              <Loader2 className="animate-spin w-5 h-5" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
+          <div className="mt-4 flex gap-3 items-center">
+            <textarea
+              rows={2}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Type your question or request..."
+              className="flex-1 px-4 py-3 rounded-lg resize-none focus:ring-2 focus:ring-purple-300 outline-none"
+            />
+
+            <button
+              onClick={handleChatSubmit}
+              disabled={loading}
+              className="bg-purple-600 px-4 py-3 rounded-lg text-white font-semibold disabled:opacity-60"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
