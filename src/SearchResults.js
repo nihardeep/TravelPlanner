@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { MapPin } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import ChatBot from "./ChatBot";
 
 export default function SearchResults({
@@ -11,31 +11,7 @@ export default function SearchResults({
   chatProps,
 }) {
   const navigate = useNavigate();
-  const [query] = useSearchParams();
   const [price, setPrice] = useState(50);
-
-  useEffect(() => {
-    const destination = query.get("destination") || "";
-    const adults = Number(query.get("adults")) || 1;
-    const rooms = Number(query.get("rooms")) || 1;
-
-    setSearchParams((prev) => {
-      if (
-        prev.destination === destination &&
-        Number(prev.adults) === adults &&
-        Number(prev.rooms) === rooms
-      ) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        destination,
-        adults,
-        rooms,
-      };
-    });
-  }, [query, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

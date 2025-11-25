@@ -6,7 +6,7 @@ export default function ChatBot({
   input,
   setInput,
   loading,
-  onSubmit,
+  handleChatSubmit,
   selectedDestination,
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,7 +21,7 @@ export default function ChatBot({
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSubmit();
+      handleChatSubmit();
     }
   };
 
@@ -89,7 +89,7 @@ export default function ChatBot({
           />
 
           <button
-            onClick={onSubmit}
+            onClick={handleChatSubmit}
             disabled={loading}
             className="bg-purple-600 px-4 py-2 rounded-lg text-white font-semibold disabled:opacity-60 flex items-center justify-center min-w-[3rem]"
           >

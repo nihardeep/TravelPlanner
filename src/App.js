@@ -87,13 +87,7 @@ export default function App() {
         },
       ]);
 
-      const params = new URLSearchParams({
-        destination: searchParams.destination,
-        adults: String(searchParams.adults),
-        rooms: String(searchParams.rooms),
-      });
-
-      navigate(`/search?${params.toString()}`);
+      navigate("/search");
     } catch (err) {
       console.error("n8n webhook error:", err);
       alert("Error submitting search. Please try again.");
@@ -191,7 +185,7 @@ export default function App() {
     input,
     setInput,
     loading,
-    onSubmit: handleChatSubmit,
+    handleChatSubmit,
     selectedDestination,
   };
 
