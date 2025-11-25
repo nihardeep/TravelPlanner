@@ -1,14 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ChatBot from "./ChatBot";
 
 export default function SearchResults({
-  chatProps,
+  destinations,
+  searchParams,
+  setSearchParams,
   selectedDestination,
-  onToggleSettings,
+  chatProps,
 }) {
   const navigate = useNavigate();
+  const [query] = useSearchParams();
+  const [price, setPrice] = useState(50);
+
+  useEffect(() => {
+    const destination = query.get("destination") || "";
+    const adults = Number(query.get("adults")) || 1;
+    const rooms = Number(query.get("rooms")) || 1;
+
+    setSearchParams((prev) => {
+      if (
+        prev.destination === destination &&
+        Number(prev.adults) === adults &&
+        Number(prev.rooms) === rooms
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        destination,
+        adults,
+        rooms,
+      };
+    });
+  }, [query, setSearchParams]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -23,7 +50,7 @@ export default function SearchResults({
             </div>
             <div className="flex items-center gap-4">
               <button
-                onClick={onToggleSettings}
+                onClick={() => alert("Settings coming soon!")}
                 className="text-sm text-purple-200 hover:text-white"
               >
                 Settings
@@ -41,45 +68,74 @@ export default function SearchResults({
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="text-white text-sm font-semibold hover:text-purple-200 transition"
         >
           ← Back
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-black bg-opacity-40 rounded-2xl p-6 space-y-6">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="bg-black bg-opacity-40 rounded-2xl p-6 w-full md:w-[250px] space-y-6">
             <div>
               <p className="text-sm uppercase tracking-wide text-purple-200 mb-2">
                 Filters
               </p>
               <h2 className="text-2xl font-bold text-white">
-                {selectedDestination || "Select a destination"}
+                {selectedDestination || searchParams.destination || "Select a destination"}
               </h2>
             </div>
 
-            <div className="space-y-4">
-              <div className="bg-black bg-opacity-30 rounded-xl p-4">
-                <h3 className="text-white font-semibold mb-2">Price</h3>
-                <div className="h-10 rounded-lg bg-black bg-opacity-30 border border-dashed border-purple-300" />
+            <div className="space-y-6">
+              <div>
+                <label className="block text-white text-sm font-semibold mb-2">
+                  Destination
+                </label>
+                <select
+                  value={searchParams.destination}
+                  onChange={(e) =>
+                    setSearchParams({ ...searchParams, destination: e.target.value })
+                  }
+                  className="w-full px-4 py-3 rounded-lg text-gray-800 font-medium focus:ring-2 focus:ring-purple-300 outline-none"
+                >
+                  <option value="">Select Destination</option>
+                  {destinations.map((d) => (
+                    <option key={d.name} value={d.name}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="bg-black bg-opacity-30 rounded-xl p-4">
-                <h3 className="text-white font-semibold mb-2">Destination</h3>
-                <div className="h-10 rounded-lg bg-black bg-opacity-30 border border-dashed border-purple-300" />
+              <div>
+                <label className="block text-white text-sm font-semibold mb-2">
+                  Price range
+                </label>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={price}
+                  onChange={(e) => setPrice(Number(e.target.value))}
+                  className="w-full accent-purple-500"
+                />
+                <p className="text-purple-200 text-sm mt-2">Budget: ${price * 50}+ per night</p>
               </div>
+
+              <button className="w-full bg-white text-purple-700 font-semibold py-3 rounded-lg hover:bg-purple-50 transition">
+                Apply Filters
+              </button>
             </div>
           </div>
 
-          <div className="md:col-span-2">
-            <div className="bg-black bg-opacity-20 rounded-2xl h-96 border border-dashed border-purple-300" />
+          <div className="flex-1">
+            <div className="bg-black bg-opacity-20 rounded-2xl h-96 border border-dashed border-purple-300 flex items-center justify-center text-purple-100 text-lg">
+              Search results will appear here.
+            </div>
           </div>
         </div>
       </main>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <ChatBot {...chatProps} />
-      </div>
+      <ChatBot {...chatProps} />
     </div>
   );
 }
