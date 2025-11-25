@@ -207,13 +207,7 @@ export default function App() {
       <Route
         path="/search"
         element={
-          <SearchResults
-            destinations={DESTINATIONS}
-            searchParams={searchParams}
-            setSearchParams={setSearchParams}
-            selectedDestination={selectedDestination}
-            chatProps={sharedChatProps}
-          />
+          <SearchResults chatProps={sharedChatProps} />
         }
       />
     </Routes>

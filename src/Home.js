@@ -140,7 +140,7 @@ export default function Home({
         </div>
       </main>
 
-      <ChatBot {...chatProps} />
+      <ChatBot {...chatProps} forceOpen />
     </div>
   );
 }

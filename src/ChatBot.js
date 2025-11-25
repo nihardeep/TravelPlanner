@@ -8,8 +8,9 @@ export default function ChatBot({
   loading,
   handleChatSubmit,
   selectedDestination,
+  forceOpen = false,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(forceOpen);
   const messageEndRef = useRef(null);
 
   useEffect(() => {
@@ -17,6 +18,12 @@ export default function ChatBot({
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (forceOpen) {
+      setIsOpen(true);
+    }
+  }, [forceOpen]);
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -27,7 +34,7 @@ export default function ChatBot({
 
   return (
     <>
-      {!isOpen && (
+      {!forceOpen && !isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 bg-purple-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-purple-500 transition z-40"
