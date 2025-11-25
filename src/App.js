@@ -1,10 +1,3 @@
-// src/App.js
-// TravelPlanner - production-ready frontend
-// - Sends search POST to n8n webhook on Search click
-// - Chat requests go to /api/gemini (serverless) so your secret stays server-side
-// - If /api/gemini is not available, shows a friendly fallback response
-// - No client-side OpenAI/Gemini secret usage
-
 import React, { useState, useEffect, useRef } from "react";
 import { Send, Loader2, MapPin, Search, MessageCircle } from "lucide-react";
 
@@ -25,7 +18,6 @@ export default function TravelApp() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  // DO NOT store production keys in the client. Use serverless endpoint instead.
   const [showSettings, setShowSettings] = useState(false);
   const messageEndRef = useRef(null);
 
@@ -57,7 +49,6 @@ export default function TravelApp() {
   ];
 
   useEffect(() => {
-    // scroll chat to bottom when messages change
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -74,15 +65,12 @@ export default function TravelApp() {
     ]);
   };
 
-  // When user clicks the Search button -> send webhook to n8n with search params
-  const handleSearchClick = async () => {
-    // Validate
+  const handleSearch = async () => {
     if (!searchParams.destination) {
       alert("Please select a destination before searching.");
       return;
     }
 
-    // Prepare payload
     const payload = {
       type: "travel_search",
       destination: searchParams.destination,
@@ -91,31 +79,28 @@ export default function TravelApp() {
       timestamp: new Date().toISOString(),
     };
 
-    // Send to your n8n webhook
     try {
       await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-    } catch (err) {
-      // Non-blocking: log but still continue
-      console.error("n8n webhook error:", err);
-    }
 
-    // Optionally switch to chatbot page for a conversational flow
-    setSelectedDestination(searchParams.destination);
-    setCurrentPage("chatbot");
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "user",
-        content: `Search initiated: ${payload.destination} — adults: ${payload.adults}, rooms: ${payload.rooms}`,
-      },
-    ]);
+      alert("Search submitted!");
+      setSelectedDestination(searchParams.destination);
+      setMessages([
+        {
+          role: "assistant",
+          content: `Great choice! Let's plan your trip to ${searchParams.destination}. Tell me your preferences, budget, and what activities interest you most.`,
+        },
+      ]);
+      setCurrentPage("chatbot");
+    } catch (err) {
+      console.error("n8n webhook error:", err);
+      alert("Error submitting search. Please try again.");
+    }
   };
 
-  // Chat submit calls a server endpoint /api/gemini (serverless) — keep key server-side
   const handleChatSubmit = async () => {
     if (!input.trim() || loading) return;
 
@@ -124,7 +109,6 @@ export default function TravelApp() {
     setInput("");
     setLoading(true);
 
-    // Optionally send the user message also to n8n for logging or workflows
     fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -137,7 +121,6 @@ export default function TravelApp() {
     }).catch((err) => console.error("n8n webhook error:", err));
 
     try {
-      // Call serverless endpoint. Implement server-side at /api/gemini which uses your Gemini key.
       const res = await fetch("/api/gemini", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,7 +138,6 @@ export default function TravelApp() {
       });
 
       if (!res.ok) {
-        // fallback friendly assistant message
         const fallback = {
           role: "assistant",
           content:
@@ -163,7 +145,6 @@ export default function TravelApp() {
         };
         setMessages((prev) => [...prev, fallback]);
 
-        // Send assistant fallback to n8n as well so your workflow can pick it up
         fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -184,7 +165,6 @@ export default function TravelApp() {
         const assistantMessage = { role: "assistant", content: assistantText };
         setMessages((prev) => [...prev, assistantMessage]);
 
-        // Post assistant reply to n8n as well
         fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -214,7 +194,6 @@ export default function TravelApp() {
     }
   };
 
-  // Layout: Home page
   if (currentPage === "home") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -254,7 +233,6 @@ export default function TravelApp() {
               Discover, Plan, and Experience Amazing Destinations
             </p>
 
-            {/* Search Panel */}
             <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 shadow-2xl max-w-3xl mx-auto mb-12">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 <div className="md:col-span-2">
@@ -312,7 +290,7 @@ export default function TravelApp() {
 
                 <div className="flex items-center">
                   <button
-                    onClick={handleSearchClick}
+                    onClick={handleSearch}
                     className="ml-2 flex items-center gap-2 px-6 py-3 rounded-lg bg-white text-purple-700 font-semibold hover:opacity-95 shadow"
                   >
                     <Search className="w-5 h-5" /> Search
@@ -322,7 +300,6 @@ export default function TravelApp() {
             </div>
           </div>
 
-          {/* Destination cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {destinations.map((d) => (
               <div
@@ -347,7 +324,6 @@ export default function TravelApp() {
     );
   }
 
-  // CHATBOT PAGE
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
       <nav className="bg-black bg-opacity-60 backdrop-blur-md border-b border-purple-500 border-opacity-30 sticky top-0 z-50">
@@ -393,7 +369,9 @@ export default function TravelApp() {
               <div
                 key={idx}
                 className={`p-3 rounded-lg max-w-[80%] ${
-                  m.role === "assistant" ? "bg-white text-black ml-0" : "bg-purple-700 text-white ml-auto"
+                  m.role === "assistant"
+                    ? "bg-white text-black ml-0"
+                    : "bg-purple-700 text-white ml-auto"
                 }`}
               >
                 <div className="text-sm whitespace-pre-line">{m.content}</div>
