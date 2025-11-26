@@ -37,7 +37,7 @@ export default function ChatBot({
       {!forceOpen && !isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-purple-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-purple-500 transition z-40"
+          className="fixed bottom-6 right-6 bg-purple-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-purple-500 transition z-50"
           aria-label="Open chat"
         >
           <MessageCircle className="w-6 h-6" />
@@ -45,7 +45,7 @@ export default function ChatBot({
       )}
 
       <div
-        className={`fixed bottom-4 right-4 w-full max-w-sm bg-black bg-opacity-90 rounded-2xl shadow-2xl border border-purple-500/40 p-4 flex flex-col transition-all duration-300 z-40 ${
+        className={`fixed bottom-4 right-4 w-full max-w-sm bg-black bg-opacity-90 rounded-2xl shadow-2xl border border-purple-500/40 p-4 flex flex-col transition-all duration-300 z-50 ${
           isOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 translate-y-4 pointer-events-none"
