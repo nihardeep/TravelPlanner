@@ -142,7 +142,13 @@ export default function Home({ navigate }) {
         if (contentType && contentType.includes("application/json")) {
           // Try to parse as JSON
           try {
-            const data = await response.json();
+            const rawBody = await response.text();
+            if (!rawBody || !rawBody.trim()) {
+              console.warn("n8n JSON response had empty body.");
+              return ["Received response but it was empty."];
+            }
+
+            const data = JSON.parse(rawBody);
             console.log("n8n JSON response:", data);
 
             const replies = formatAssistantReplies(data);
@@ -157,8 +163,9 @@ export default function Home({ navigate }) {
           // Handle plain text response
           try {
             const text = await response.text();
-            console.log("n8n text response:", text);
-            return [text || "Thank you for your message! Our travel assistant will respond shortly."];
+            const cleanedText = text?.trim();
+            console.log("n8n text response:", cleanedText);
+            return [cleanedText || "Thank you for your message! Our travel assistant will respond shortly."];
           } catch (textError) {
             console.error("Failed to read text response:", textError);
             return ["Thank you for your message! Our travel assistant will respond shortly."];
