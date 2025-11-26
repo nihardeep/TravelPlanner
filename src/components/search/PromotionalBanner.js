@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, TicketPercent } from 'lucide-react';
+import { X, Ticket } from 'lucide-react';
 import Button from '../ui/button';
 
 export default function PromotionalBanner() {
@@ -11,7 +11,7 @@ export default function PromotionalBanner() {
     <div className="bg-[#fef3c7] rounded-2xl p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between shadow-inner border border-orange-200">
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-orange-500 shadow-lg">
-          <TicketPercent />
+          <Ticket />
         </div>
         <div>
           <p className="text-sm uppercase tracking-[0.3em] text-orange-500 mb-1">
