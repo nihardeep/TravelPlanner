@@ -1,27 +1,43 @@
 import React, { useState } from 'react';
-import { MessageCircle, Send, X } from 'lucide-react';
+import { MessageCircle, Send, X, Loader2 } from 'lucide-react';
 
-export default function ChatBot() {
+export default function ChatBot({ onChatSubmit }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Hi! I\'m your Trip Planner assistant. Tell me about your dream trip!' }
   ]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: input };
+    const messageContent = input;
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
 
-    // Simulate assistant response
-    setTimeout(() => {
+    // Send to n8n webhook
+    try {
+      await onChatSubmit(messageContent);
+
+      // Simulate assistant response for demo
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'Thanks for your message! I\'ve sent it to our travel planning system.'
+        }]);
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Chat error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Thanks for your message! This is a demo response.'
+        content: 'Sorry, there was an error sending your message.'
       }]);
-    }, 1000);
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -83,9 +99,14 @@ export default function ChatBot() {
               />
               <button
                 onClick={handleSend}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center justify-center"
+                disabled={isLoading}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center justify-center disabled:opacity-60"
               >
-                <Send className="w-4 h-4" />
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>

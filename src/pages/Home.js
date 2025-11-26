@@ -28,10 +28,17 @@ const DESTINATIONS = [
 ];
 
 export default function Home({ navigate }) {
+  const [selectedDestination, setSelectedDestination] = React.useState('');
+  const [searchParams, setSearchParams] = React.useState({
+    destination: '',
+    adults: 1,
+    rooms: 1,
+  });
+
   const handleSearch = async (searchData) => {
     // Send to n8n webhook
     const payload = {
-      type: "travel_search",
+      type: "search",
       destination: searchData.destination,
       adults: searchData.adults,
       rooms: searchData.rooms,
@@ -53,8 +60,30 @@ export default function Home({ navigate }) {
   };
 
   const handleDestinationClick = (destination) => {
+    setSelectedDestination(destination);
     // For now, just navigate to search
     navigate('/search');
+  };
+
+  const handleChatSubmit = async (message) => {
+    const payload = {
+      type: "chat",
+      message: message,
+      destination: selectedDestination || null,
+      adults: searchParams.adults,
+      rooms: searchParams.rooms,
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Chat n8n webhook error:", err);
+    }
   };
 
   return (
@@ -86,7 +115,7 @@ export default function Home({ navigate }) {
         </div>
       </main>
 
-      <ChatBot />
+      <ChatBot onChatSubmit={handleChatSubmit} />
     </div>
   );
 }
