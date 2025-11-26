@@ -94,6 +94,7 @@ export default function Home({ navigate }) {
             console.log("n8n JSON response:", data);
 
             // Handle different possible response formats
+            if (data.reply) return data.reply;
             if (data.response) return data.response;
             if (data.message) return data.message;
             if (data.output) return data.output;
