@@ -73,6 +73,58 @@ export default function Home({ navigate }) {
       timestamp: new Date().toISOString(),
     };
 
+    const formatAssistantReplies = (responseData) => {
+      const replies = [];
+
+      const pushNormalized = (value) => {
+        if (value === undefined || value === null) return;
+        if (Array.isArray(value)) {
+          value.forEach(pushNormalized);
+          return;
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed) replies.push(trimmed);
+          return;
+        }
+        if (typeof value === 'object') {
+          if (value.content) {
+            pushNormalized(value.content);
+            return;
+          }
+          if (value.reply) {
+            pushNormalized(value.reply);
+            return;
+          }
+          replies.push(JSON.stringify(value, null, 2));
+          return;
+        }
+        replies.push(String(value));
+      };
+
+      const possibleFields = [
+        responseData?.reply,
+        responseData?.response,
+        responseData?.message,
+        responseData?.output,
+        responseData?.text,
+      ];
+      possibleFields.forEach(pushNormalized);
+
+      if (Array.isArray(responseData?.messages)) {
+        responseData.messages.forEach(pushNormalized);
+      }
+      if (Array.isArray(responseData?.replies)) {
+        responseData.replies.forEach(pushNormalized);
+      }
+
+      if (!replies.length) {
+        pushNormalized(responseData);
+      }
+
+      return replies;
+    };
+
     try {
       console.log("Sending chat message to n8n:", payload);
 
@@ -93,29 +145,23 @@ export default function Home({ navigate }) {
             const data = await response.json();
             console.log("n8n JSON response:", data);
 
-            // Handle different possible response formats
-            if (data.reply) return data.reply;
-            if (data.response) return data.response;
-            if (data.message) return data.message;
-            if (data.output) return data.output;
-            if (data.text) return data.text;
-            if (typeof data === 'string') return data;
+            const replies = formatAssistantReplies(data);
+            if (replies.length) return replies;
 
-            // If it's an object, stringify it for display
-            return JSON.stringify(data, null, 2);
+            return ["Received response but it was empty."];
           } catch (jsonError) {
             console.error("Failed to parse JSON response:", jsonError);
-            return "Received response but couldn't parse it. Please check the server logs.";
+            return ["Received response but couldn't parse it. Please check the server logs."];
           }
         } else {
           // Handle plain text response
           try {
             const text = await response.text();
             console.log("n8n text response:", text);
-            return text || "Thank you for your message! Our travel assistant will respond shortly.";
+            return [text || "Thank you for your message! Our travel assistant will respond shortly."];
           } catch (textError) {
             console.error("Failed to read text response:", textError);
-            return "Thank you for your message! Our travel assistant will respond shortly.";
+            return ["Thank you for your message! Our travel assistant will respond shortly."];
           }
         }
       } else {
@@ -126,7 +172,7 @@ export default function Home({ navigate }) {
       }
     } catch (err) {
       console.error("Chat n8n webhook error:", err);
-      return "Sorry, I'm having trouble connecting right now. Please try again later.";
+      return ["Sorry, I'm having trouble connecting right now. Please try again later."];
     }
   };
 

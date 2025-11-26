@@ -24,11 +24,28 @@ export default function ChatBot({ onChatSubmit }) {
       const assistantResponse = await onChatSubmit(messageContent);
       console.log("ChatBot: Received response from n8n:", assistantResponse);
 
-      // Display the actual response from n8n
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: assistantResponse || "I received your message but got an empty response."
-      }]);
+      const assistantMessages = Array.isArray(assistantResponse)
+        ? assistantResponse
+        : [assistantResponse];
+
+      const normalizedResponses = assistantMessages
+        .filter((msg) => msg !== undefined && msg !== null && msg !== '')
+        .map((msg) =>
+          typeof msg === 'string' ? msg : JSON.stringify(msg, null, 2)
+        );
+
+      const repliesToDisplay = normalizedResponses.length
+        ? normalizedResponses
+        : ["I received your message but got an empty response."];
+
+      // Display every response from n8n
+      setMessages(prev => [
+        ...prev,
+        ...repliesToDisplay.map((content) => ({
+          role: 'assistant',
+          content,
+        }))
+      ]);
     } catch (error) {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, {
