@@ -46,7 +46,7 @@ export default function Home({ navigate }) {
     };
 
     try {
-      await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
+      await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -76,7 +76,7 @@ export default function Home({ navigate }) {
     try {
       console.log("Sending chat message to n8n:", payload);
 
-      const response = await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
+      const response = await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
