@@ -39,7 +39,7 @@ export default function Home({ navigate }) {
     };
 
     try {
-      await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+      await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
