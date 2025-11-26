@@ -18,24 +18,22 @@ export default function ChatBot({ onChatSubmit }) {
     setInput('');
     setIsLoading(true);
 
-    // Send to n8n webhook
     try {
-      await onChatSubmit(messageContent);
+      // Send to n8n webhook and wait for response
+      const assistantResponse = await onChatSubmit(messageContent);
 
-      // Simulate assistant response for demo
-      setTimeout(() => {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: 'Thanks for your message! I\'ve sent it to our travel planning system.'
-        }]);
-        setIsLoading(false);
-      }, 1000);
+      // Display the actual response from n8n
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: assistantResponse
+      }]);
     } catch (error) {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Sorry, there was an error sending your message.'
       }]);
+    } finally {
       setIsLoading(false);
     }
   };

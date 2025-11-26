@@ -70,19 +70,26 @@ export default function Home({ navigate }) {
       type: "chat",
       message: message,
       destination: selectedDestination || null,
-      adults: searchParams.adults,
-      rooms: searchParams.rooms,
       timestamp: new Date().toISOString(),
     };
 
     try {
-      await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
+      const response = await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Return the response data to be displayed in chat
+        return data.response || data.message || "Thank you for your message! Our travel assistant will respond shortly.";
+      } else {
+        throw new Error(`HTTP ${response.status}`);
+      }
     } catch (err) {
       console.error("Chat n8n webhook error:", err);
+      return "Sorry, I'm having trouble connecting right now. Please try again later.";
     }
   };
 
