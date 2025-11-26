@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import SearchCard from '../components/SearchCard';
 import DestinationCard from '../components/DestinationCard';
@@ -27,13 +28,9 @@ const DESTINATIONS = [
   },
 ];
 
-export default function Home({ navigate }) {
+export default function Home() {
+  const navigate = useNavigate();
   const [selectedDestination, setSelectedDestination] = React.useState('');
-  const [searchParams, setSearchParams] = React.useState({
-    destination: '',
-    adults: 1,
-    rooms: 1,
-  });
 
   const handleSearch = async (searchData) => {
     // Send to n8n webhook

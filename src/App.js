@@ -1,32 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
-import ComingSoon from "./pages/ComingSoon";
-
-// Simple routing without external dependencies
-const routes = {
-  "/": Home,
-  "/search": ComingSoon,
-};
+import Search from "./pages/Search";
 
 export default function App() {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
-
-  // Listen for browser navigation
-  React.useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  const navigate = (path) => {
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
-  };
-
-  const CurrentComponent = routes[currentPath] || Home;
-
-  return <CurrentComponent navigate={navigate} />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
