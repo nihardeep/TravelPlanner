@@ -74,18 +74,54 @@ export default function Home({ navigate }) {
     };
 
     try {
+      console.log("Sending chat message to n8n:", payload);
+
       const response = await fetch("https://ndsharma.app.n8n.cloud/webhook-test/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
+      console.log("n8n response status:", response.status);
+
       if (response.ok) {
-        const data = await response.json();
-        // Return the response data to be displayed in chat
-        return data.response || data.message || "Thank you for your message! Our travel assistant will respond shortly.";
+        const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("application/json")) {
+          // Try to parse as JSON
+          try {
+            const data = await response.json();
+            console.log("n8n JSON response:", data);
+
+            // Handle different possible response formats
+            if (data.response) return data.response;
+            if (data.message) return data.message;
+            if (data.output) return data.output;
+            if (data.text) return data.text;
+            if (typeof data === 'string') return data;
+
+            // If it's an object, stringify it for display
+            return JSON.stringify(data, null, 2);
+          } catch (jsonError) {
+            console.error("Failed to parse JSON response:", jsonError);
+            return "Received response but couldn't parse it. Please check the server logs.";
+          }
+        } else {
+          // Handle plain text response
+          try {
+            const text = await response.text();
+            console.log("n8n text response:", text);
+            return text || "Thank you for your message! Our travel assistant will respond shortly.";
+          } catch (textError) {
+            console.error("Failed to read text response:", textError);
+            return "Thank you for your message! Our travel assistant will respond shortly.";
+          }
+        }
       } else {
-        throw new Error(`HTTP ${response.status}`);
+        console.error("n8n webhook returned error status:", response.status);
+        const errorText = await response.text().catch(() => "Unknown error");
+        console.error("Error response:", errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
     } catch (err) {
       console.error("Chat n8n webhook error:", err);

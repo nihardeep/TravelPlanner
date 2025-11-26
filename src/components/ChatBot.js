@@ -20,12 +20,14 @@ export default function ChatBot({ onChatSubmit }) {
 
     try {
       // Send to n8n webhook and wait for response
+      console.log("ChatBot: Sending message to n8n...");
       const assistantResponse = await onChatSubmit(messageContent);
+      console.log("ChatBot: Received response from n8n:", assistantResponse);
 
       // Display the actual response from n8n
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: assistantResponse
+        content: assistantResponse || "I received your message but got an empty response."
       }]);
     } catch (error) {
       console.error('Chat error:', error);
