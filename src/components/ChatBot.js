@@ -15,19 +15,13 @@ const createChatId = () =>
 
 export default function ChatBot({ onChatSubmit }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState(() => {
-    console.log('ChatBot: Initializing with messages:', INITIAL_MESSAGES);
-    return [...INITIAL_MESSAGES];
-  });
+  const [messages, setMessages] = useState(() => [...INITIAL_MESSAGES]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatId, setChatId] = useState(null);
 
   const startNewChat = () => {
-    console.log('ChatBot: Starting new chat with messages:', INITIAL_MESSAGES);
-    const freshMessages = [...INITIAL_MESSAGES];
-    console.log('ChatBot: Setting messages to:', freshMessages);
-    setMessages(freshMessages);
+    setMessages([...INITIAL_MESSAGES]);
     const nextId = createChatId();
     setChatId(nextId);
     setIsLoading(false);
@@ -35,7 +29,6 @@ export default function ChatBot({ onChatSubmit }) {
   };
 
   const handleOpenChat = () => {
-    console.log('ChatBot: Opening chat');
     startNewChat();
     setIsOpen(true);
   };
@@ -133,7 +126,6 @@ export default function ChatBot({ onChatSubmit }) {
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto space-y-3">
-            {console.log('ChatBot: Rendering messages:', messages)}
             {messages.map((message, index) => (
               <div
                 key={index}

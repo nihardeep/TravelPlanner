@@ -58,7 +58,6 @@ export default function Home() {
     }
 
     // Navigate to search page with all search parameters
-    console.log("Navigating to search page immediately");
     navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}&adults=${searchData.adults}&rooms=${searchData.rooms}`);
   };
 
