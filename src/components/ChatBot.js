@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react';
+import ChatMessageSkeleton from './ChatMessageSkeleton';
 
 const INITIAL_MESSAGES = [
   {
@@ -137,6 +138,9 @@ export default function ChatBot({ onChatSubmit }) {
                 {message.content}
               </div>
             ))}
+            {isLoading && (
+              <ChatMessageSkeleton />
+            )}
           </div>
 
           <div className="p-4 border-t border-gray-200">

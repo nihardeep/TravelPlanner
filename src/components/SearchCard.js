@@ -32,7 +32,7 @@ export default function SearchCard({
 
   return (
     <div className={`bg-gradient-to-r from-purple-500 via-pink-500 to-pink-600 rounded-2xl shadow-2xl ${isCompact ? 'py-4 px-6' : 'p-8'} max-w-7xl mx-auto ${className}`}>
-      <div className={`flex gap-4 ${isCompact ? 'flex-col sm:flex-row' : 'flex-col md:flex-row'} items-end`}>
+      <div className={`flex gap-4 ${isCompact ? 'flex-col sm:flex-row' : 'flex-row'} items-end`}>
         <div className="flex-1">
           <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
             Location
@@ -54,7 +54,7 @@ export default function SearchCard({
           )}
         </div>
 
-        <div className={isCompact ? 'w-full sm:w-32' : 'w-full md:w-32'}>
+        <div className={isCompact ? 'w-full sm:w-32' : 'w-32 flex-shrink-0'}>
           <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
             Rooms
           </label>

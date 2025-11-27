@@ -4,6 +4,7 @@ import SearchCard from '../components/SearchCard';
 import FilterSidebar from '../components/search/FilterSidebar';
 import SortOptions from '../components/search/SortOptions';
 import HotelGrid from '../components/search/HotelGrid';
+import HotelCardSkeleton from '../components/search/HotelCardSkeleton';
 import Input from '../components/ui/input';
 import Button from '../components/ui/button';
 import { MapPin, Map } from 'lucide-react';
@@ -310,6 +311,7 @@ export default function Search() {
               hotels={filteredHotels}
               favorites={favorites}
               onToggleFavorite={handleToggleFavorite}
+              isLoading={isLoading && !searchResults}
             />
 
 
