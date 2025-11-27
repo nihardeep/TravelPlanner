@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import SearchCard from '../components/SearchCard';
 import DestinationCard from '../components/DestinationCard';
 import ChatBot from '../components/ChatBot';
+import { getOrCreateSearchSession } from '../lib/session';
 
 const DESTINATIONS = [
   {
@@ -33,6 +34,7 @@ export default function Home() {
   const [selectedDestination, setSelectedDestination] = React.useState('');
 
   const handleSearch = async (searchData) => {
+    const session = getOrCreateSearchSession();
     // Send to n8n webhook
     const payload = {
       type: "search",
@@ -40,6 +42,7 @@ export default function Home() {
       adults: searchData.adults,
       rooms: searchData.rooms,
       timestamp: new Date().toISOString(),
+      sessionId: session.id,
     };
 
     try {
