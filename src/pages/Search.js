@@ -117,6 +117,7 @@ export default function Search() {
   };
 
   const handleChatSubmit = async (message) => {
+    console.log("Search page handleChatSubmit called with:", message, "currentDestination:", currentDestination);
     const payload = {
       type: "chat",
       message: message,

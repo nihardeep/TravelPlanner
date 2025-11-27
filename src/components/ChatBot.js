@@ -46,7 +46,11 @@ export default function ChatBot({ onChatSubmit }) {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    console.log("ChatBot handleSend called, input:", input, "isLoading:", isLoading);
+    if (!input.trim() || isLoading) {
+      console.log("ChatBot handleSend blocked - input empty or loading");
+      return;
+    }
 
     const userMessage = { role: 'user', content: input };
     const messageContent = input;
