@@ -67,13 +67,12 @@ export default function Home() {
     navigate('/search');
   };
 
-  const handleChatSubmit = async (message, chatId) => {
+  const handleChatSubmit = async (message) => {
     const payload = {
       type: "chat",
       message: message,
       destination: selectedDestination || null,
       timestamp: new Date().toISOString(),
-      chatId: chatId,
     };
 
     const formatAssistantReplies = (responseData) => {

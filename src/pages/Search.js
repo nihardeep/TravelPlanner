@@ -140,13 +140,19 @@ export default function Search() {
   const fetchSearchResults = async (sessionId) => {
     setIsLoading(true);
     try {
+      const payload = {
+        type: "get_search_results",
+      };
+
+      // Only include sessionId if it exists
+      if (sessionId) {
+        payload.sessionId = sessionId;
+      }
+
       const response = await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "get_search_results",
-          sessionId: sessionId,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -166,11 +172,8 @@ export default function Search() {
     }
   };
 
-  // Check for session ID in URL params or stored search results
+  // Check for stored search results from chat
   React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('sessionId');
-
     // Check if we have stored search results from chat
     const storedResults = sessionStorage.getItem('searchResults');
     if (storedResults) {
@@ -184,10 +187,8 @@ export default function Search() {
       }
     }
 
-    // Otherwise, try to fetch from n8n if we have a session ID
-    if (sessionId) {
-      fetchSearchResults(sessionId);
-    }
+    // Always try to fetch search results regardless of session ID
+    fetchSearchResults(null);
   }, []);
 
   const transformN8nData = (data) => {

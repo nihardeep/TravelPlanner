@@ -54,10 +54,9 @@ export default function ChatBot({ onChatSubmit }) {
     setIsLoading(true);
 
     try {
-      const activeChatId = ensureChatId();
       // Send to n8n webhook and wait for response
       console.log("ChatBot: Sending message to n8n...");
-      const assistantResponse = await onChatSubmit(messageContent, activeChatId);
+      const assistantResponse = await onChatSubmit(messageContent);
       console.log("ChatBot: Received response from n8n:", assistantResponse);
 
       const assistantMessages = Array.isArray(assistantResponse)
