@@ -116,10 +116,11 @@ export default function Search() {
     }));
   };
 
-  const handleChatSubmit = async (message) => {
+  const handleChatSubmit = async (message, chatId) => {
     const payload = {
       type: "chat",
       message: message,
+      chatId: chatId,
       destination: currentDestination || null,
       timestamp: new Date().toISOString(),
     };

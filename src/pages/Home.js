@@ -92,10 +92,11 @@ export default function Home() {
     navigate(`/search?sessionId=${session.id}&destination=${destinationValue}`);
   };
 
-  const handleChatSubmit = async (message) => {
+  const handleChatSubmit = async (message, chatId) => {
     const payload = {
       type: "chat",
       message: message,
+      chatId: chatId,
       destination: selectedDestination || null,
       timestamp: new Date().toISOString(),
     };
