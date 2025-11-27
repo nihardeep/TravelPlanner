@@ -82,6 +82,11 @@ export default function HotelCard({ hotel, isFavorite, onToggleFavorite }) {
               <MapPin className="w-4 h-4 text-[#e879f9]" />
               {hotel.location}
             </p>
+            {hotel.description && (
+              <p className="text-sm text-white/70 mt-2 line-clamp-2">
+                {hotel.description}
+              </p>
+            )}
           </div>
 
           <p className="text-sm text-[#f87171] font-semibold">
@@ -104,15 +109,14 @@ export default function HotelCard({ hotel, isFavorite, onToggleFavorite }) {
               {hotel.rating.score} <span>{hotel.rating.label}</span>
             </div>
             <p className="text-xs text-white/70">{hotel.rating.reviews} reviews</p>
-            <p className="text-sm text-white/50 line-through">
-              {hotel.originalPrice}
-            </p>
-            <p className="text-sm font-semibold text-[#f87171]">
-              {hotel.discountPercent}
-            </p>
+            {hotel.hasActivity && hotel.hotelPrice && (
+              <p className="text-sm text-white/50 line-through">
+                Hotel: Rs. {hotel.hotelPrice.toLocaleString('en-IN')}
+              </p>
+            )}
             <p className="text-3xl font-bold text-white">{hotel.finalPrice}</p>
             <p className="text-xs text-white/60">
-              Per night before taxes and fees
+              {hotel.hasActivity ? 'Package price' : 'Per night'} before taxes and fees
             </p>
           </div>
 

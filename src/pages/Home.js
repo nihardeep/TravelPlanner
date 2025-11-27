@@ -57,8 +57,8 @@ export default function Home() {
       console.error("n8n webhook error:", err);
     }
 
-    // Navigate to search page
-    navigate('/search');
+    // Navigate to search page with session ID
+    navigate(`/search?sessionId=${session.id}`);
   };
 
   const handleDestinationClick = (destination) => {
@@ -153,6 +153,15 @@ export default function Home() {
 
             const data = JSON.parse(rawBody);
             console.log("n8n JSON response:", data);
+
+            // Check if this is a search results response
+            if (data.action === "search_results" && data.packages) {
+              // Store the search results and navigate to search page
+              sessionStorage.setItem('searchResults', JSON.stringify(data));
+              const session = getOrCreateSearchSession();
+              navigate(`/search?sessionId=${session.id}`);
+              return ["I've found some great options for you! Here are the search results:"];
+            }
 
             const replies = formatAssistantReplies(data);
             if (replies.length) return replies;

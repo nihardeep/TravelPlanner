@@ -119,6 +119,8 @@ export default function Search() {
   const [sortOption, setSortOption] = React.useState('best');
   const [favorites, setFavorites] = React.useState({});
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = React.useState(false);
+  const [searchResults, setSearchResults] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleUpdateSearch = (updates) => {
     setSearchParams((prev) => ({ ...prev, ...updates }));
@@ -135,7 +137,84 @@ export default function Search() {
     }));
   };
 
-  const filteredHotels = HOTEL_DATA;
+  const fetchSearchResults = async (sessionId) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "get_search_results",
+          sessionId: sessionId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Search results from n8n:", data);
+
+        if (data.action === "search_results" && data.packages) {
+          setSearchResults(data);
+        }
+      } else {
+        console.error("Failed to fetch search results");
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Check for session ID in URL params or stored search results
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('sessionId');
+
+    // Check if we have stored search results from chat
+    const storedResults = sessionStorage.getItem('searchResults');
+    if (storedResults) {
+      try {
+        const parsedResults = JSON.parse(storedResults);
+        setSearchResults(parsedResults);
+        sessionStorage.removeItem('searchResults'); // Clear after use
+        return;
+      } catch (error) {
+        console.error('Error parsing stored search results:', error);
+      }
+    }
+
+    // Otherwise, try to fetch from n8n if we have a session ID
+    if (sessionId) {
+      fetchSearchResults(sessionId);
+    }
+  }, []);
+
+  const transformN8nData = (data) => {
+    return data.packages.map((pkg, index) => ({
+      id: `n8n-${index}`,
+      name: pkg.hotel.name,
+      images: pkg.hotel.image
+        ? [pkg.hotel.image]
+        : ['https://images.pexels.com/photos/261395/pexels-photo-261395.jpeg?auto=compress&cs=tinysrgb&w=1200'],
+      newBadge: null,
+      location: `${data.destination}`,
+      booked: 'Popular choice',
+      tags: pkg.activity ? ['Package Deal', 'Hotel + Activity'] : ['Hotel Only'],
+      discountBadge: null,
+      discountAmount: null,
+      rating: { score: '8.0', label: 'Very Good', reviews: '100+' },
+      originalPrice: null,
+      discountPercent: null,
+      finalPrice: `Rs. ${pkg.package_total_price.toLocaleString('en-IN')}`,
+      description: pkg.hotel.description,
+      hasActivity: !!pkg.activity,
+      hotelPrice: pkg.hotel.price,
+      packagePrice: pkg.package_total_price,
+    }));
+  };
+
+  const filteredHotels = searchResults ? transformN8nData(searchResults) : HOTEL_DATA;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0a24] via-[#1a1530] to-[#2d1b69] text-white">
