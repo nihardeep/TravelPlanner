@@ -1,13 +1,48 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react';
 
+const INITIAL_MESSAGES = [
+  {
+    role: 'assistant',
+    content:
+      "Hi! I'm your Trip Planner assistant. Tell me about your dream trip!",
+  },
+];
+
+const createChatId = () =>
+  `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
 export default function ChatBot({ onChatSubmit }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hi! I\'m your Trip Planner assistant. Tell me about your dream trip!' }
-  ]);
+  const [messages, setMessages] = useState(() => [...INITIAL_MESSAGES]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [chatId, setChatId] = useState(null);
+
+  const startNewChat = () => {
+    setMessages(() => [...INITIAL_MESSAGES]);
+    const nextId = createChatId();
+    setChatId(nextId);
+    setIsLoading(false);
+    setInput('');
+  };
+
+  const handleOpenChat = () => {
+    startNewChat();
+    setIsOpen(true);
+  };
+
+  const handleCloseChat = () => {
+    setIsOpen(false);
+    setChatId(null);
+  };
+
+  const ensureChatId = () => {
+    if (chatId) return chatId;
+    const nextId = createChatId();
+    setChatId(nextId);
+    return nextId;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -19,9 +54,10 @@ export default function ChatBot({ onChatSubmit }) {
     setIsLoading(true);
 
     try {
+      const activeChatId = ensureChatId();
       // Send to n8n webhook and wait for response
       console.log("ChatBot: Sending message to n8n...");
-      const assistantResponse = await onChatSubmit(messageContent);
+      const assistantResponse = await onChatSubmit(messageContent, activeChatId);
       console.log("ChatBot: Received response from n8n:", assistantResponse);
 
       const assistantMessages = Array.isArray(assistantResponse)
@@ -68,7 +104,7 @@ export default function ChatBot({ onChatSubmit }) {
     <>
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpenChat}
           className="fixed bottom-6 right-6 bg-purple-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-purple-500 transition z-50"
           aria-label="Open chat"
         >
@@ -81,7 +117,7 @@ export default function ChatBot({ onChatSubmit }) {
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Plan Your Trip</h3>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleCloseChat}
               className="text-gray-400 hover:text-gray-600 transition"
               aria-label="Close chat"
             >
