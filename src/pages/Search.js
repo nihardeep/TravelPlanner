@@ -6,7 +6,7 @@ import SortOptions from '../components/search/SortOptions';
 import HotelGrid from '../components/search/HotelGrid';
 import Input from '../components/ui/input';
 import Button from '../components/ui/button';
-import { MapPin, Map } from 'lucide-react';
+import { MapPin, Map, Car } from 'lucide-react';
 import { getDestinationDisplayName, getDestinationImage } from '../utils/destinations';
 
 const INITIAL_FILTERS = {
