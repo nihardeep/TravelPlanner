@@ -297,8 +297,12 @@ export default function Search() {
       }
     }
 
-    // Always try to fetch search results regardless of session ID
-    fetchSearchResults(null);
+    // Get sessionId from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('sessionId');
+
+    // Fetch search results with sessionId
+    fetchSearchResults(sessionId);
   }, []);
 
   const transformN8nData = (data) => {
