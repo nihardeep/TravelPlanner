@@ -225,7 +225,7 @@ export default function Home() {
         </div>
       </main>
 
-      <ChatBot onChatSubmit={handleChatSubmit} />
+      <ChatBot key="home-chat" onChatSubmit={handleChatSubmit} />
     </div>
   );
 }

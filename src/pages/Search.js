@@ -487,7 +487,7 @@ export default function Search() {
         </div>
       </main>
 
-      <ChatBot onChatSubmit={handleChatSubmit} />
+      <ChatBot key="search-chat" onChatSubmit={handleChatSubmit} />
     </div>
   );
 }
