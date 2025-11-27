@@ -37,9 +37,9 @@ export default function Home() {
   const navigate = useNavigate();
   const [selectedDestination, setSelectedDestination] = React.useState('');
 
-  const handleSearch = async (searchData) => {
+  const handleSearch = (searchData) => {
     const session = getOrCreateSearchSession();
-    // Send to n8n webhook
+    // Send to n8n webhook (fire-and-forget)
     const payload = {
       type: "search",
       destination: searchData.destination,
@@ -51,24 +51,23 @@ export default function Home() {
 
     console.log("Sending search to n8n with session ID:", payload);
 
-    try {
-      await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {
+    // Fire-and-forget: don't await the response
+    fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(err => {
       console.error("n8n webhook error:", err);
-    }
+    });
 
-    // Navigate to search page with all search parameters
+    // Navigate immediately to search page
     navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}&adults=${searchData.adults}&rooms=${searchData.rooms}`);
   };
 
-  const handleDestinationClick = async (destinationValue) => {
+  const handleDestinationClick = (destinationValue) => {
     const session = getOrCreateSearchSession();
 
-    // Send search request to n8n with default values
+    // Send search request to n8n with default values (fire-and-forget)
     const payload = {
       type: "search",
       destination: destinationValue,
@@ -80,17 +79,16 @@ export default function Home() {
 
     console.log("Sending destination card search to n8n:", payload);
 
-    try {
-      await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {
+    // Fire-and-forget: don't await the response
+    fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(err => {
       console.error("Destination card n8n webhook error:", err);
-    }
+    });
 
-    // Navigate to search page with destination
+    // Navigate immediately to search page
     navigate(`/search?sessionId=${session.id}&destination=${destinationValue}`);
   };
 

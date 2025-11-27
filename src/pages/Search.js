@@ -206,7 +206,8 @@ export default function Search() {
             if (data.action === "search_results" && data.packages) {
               // Store the search results and navigate to search page
               sessionStorage.setItem('searchResults', JSON.stringify(data));
-              window.location.reload(); // Reload to show new results
+              // Reload the page to show new results
+              window.location.reload();
               return ["I've found some great options for you! Here are the search results:"];
             }
 
