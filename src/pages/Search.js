@@ -1,20 +1,13 @@
 import React from 'react';
 import Header from '../components/Header';
-import SearchHeader from '../components/search/SearchHeader';
-import PromotionalBanner from '../components/search/PromotionalBanner';
+import SearchCard from '../components/SearchCard';
 import FilterSidebar from '../components/search/FilterSidebar';
 import SortOptions from '../components/search/SortOptions';
 import HotelGrid from '../components/search/HotelGrid';
 import Input from '../components/ui/input';
 import Button from '../components/ui/button';
-import { MapPin, Map, Car } from 'lucide-react';
-
-const INITIAL_SEARCH = {
-  location: 'Kuala Lumpur',
-  checkIn: '27 Nov 2025',
-  checkOut: '29 Nov 2025',
-  guests: '2-adults',
-};
+import { MapPin, Map } from 'lucide-react';
+import { getDestinationDisplayName, getDestinationImage } from '../utils/destinations';
 
 const INITIAL_FILTERS = {
   payAtHotel: true,
@@ -113,7 +106,6 @@ const CAR_DATA = [
 ];
 
 export default function Search() {
-  const [searchParams, setSearchParams] = React.useState(INITIAL_SEARCH);
   const [priceRange, setPriceRange] = React.useState([0, 2039410]);
   const [filters, setFilters] = React.useState(INITIAL_FILTERS);
   const [sortOption, setSortOption] = React.useState('best');
@@ -121,10 +113,14 @@ export default function Search() {
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = React.useState(false);
   const [searchResults, setSearchResults] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
-  const handleUpdateSearch = (updates) => {
-    setSearchParams((prev) => ({ ...prev, ...updates }));
-  };
+  // Get destination from URL params
+  const searchParams = new URLSearchParams(window.location.search);
+  const destination = searchParams.get('destination') || 'kuala-lumpur';
+  const destinationName = getDestinationDisplayName(destination);
+  const destinationImage = getDestinationImage(destination);
+
 
   const handleToggleFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -217,17 +213,49 @@ export default function Search() {
 
   const filteredHotels = searchResults ? transformN8nData(searchResults) : HOTEL_DATA;
 
+  // Handle scroll for sticky search widget
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 200);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0a24] via-[#1a1530] to-[#2d1b69] text-white">
       <Header />
-      <SearchHeader
-        searchParams={searchParams}
-        onUpdate={handleUpdateSearch}
-        onSearch={() => null}
-      />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-        <PromotionalBanner />
+      {/* Sticky Search Widget */}
+      <div className={`transition-all duration-300 ${isScrolled ? 'sticky top-0 z-40 shadow-lg bg-[#1a1530]/95 backdrop-blur' : ''}`}>
+        <SearchCard variant="compact" className="mb-0" onSearch={() => {}} />
+      </div>
+
+      {/* Dynamic Heading Section */}
+      <section className="bg-[#1a1530] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm uppercase tracking-[0.4em] text-gray-400 mb-4">
+            TRAVELMATE SEARCH
+          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white">
+            Plan your stay in {destinationName}
+          </h1>
+        </div>
+      </section>
+
+      {/* Holiday Destination Image */}
+      <section className="py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <img
+            src={destinationImage}
+            alt={destinationName}
+            className="w-full h-64 md:h-72 object-cover rounded-lg shadow-2xl"
+          />
+        </div>
+      </section>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-80 lg:flex-shrink-0">
@@ -264,9 +292,9 @@ export default function Search() {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm text-white/70">Showing 9,778 choices</p>
+                  <p className="text-sm text-white/70">Showing {filteredHotels.length} choices</p>
                   <h2 className="text-2xl font-semibold">
-                    Kuala Lumpur · 27 Nov - 29 Nov · 2 adults
+                    {destinationName} · Hotels & Accommodations
                   </h2>
                 </div>
                 <Button variant="outline" className="w-full sm:w-auto">
@@ -292,14 +320,14 @@ export default function Search() {
               <div className="h-56 rounded-2xl bg-gradient-to-r from-[#3b82f6]/20 to-[#e879f9]/20 border border-white/10 flex items-center justify-center text-white/70">
                 <div className="text-center space-y-2">
                   <MapPin className="w-8 h-8 mx-auto text-[#e879f9]" />
-                  <p className="font-semibold">Pinch and zoom to explore KL</p>
+                  <p className="font-semibold">Pinch and zoom to explore {destinationName}</p>
                   <p className="text-sm text-white/60">
                     Coming soon: full interactive map experience.
                   </p>
                 </div>
               </div>
               <Input
-                placeholder="Search within map area (e.g. Bukit Bintang, KLCC)"
+                placeholder={`Search within ${destinationName} area (e.g. city center, landmarks)`}
                 className="bg-white text-gray-900 border border-white/30 placeholder:text-gray-500"
               />
             </div>

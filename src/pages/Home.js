@@ -57,14 +57,14 @@ export default function Home() {
       console.error("n8n webhook error:", err);
     }
 
-    // Navigate to search page with session ID
-    navigate(`/search?sessionId=${session.id}`);
+    // Navigate to search page with session ID and destination
+    navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}`);
   };
 
   const handleDestinationClick = (destination) => {
     setSelectedDestination(destination);
-    // For now, just navigate to search
-    navigate('/search');
+    // Navigate to search with destination
+    navigate(`/search?destination=${destination}`);
   };
 
   const handleChatSubmit = async (message) => {

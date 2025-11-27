@@ -1,54 +1,25 @@
 import React from 'react';
-import { MapPin, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Heart, Star } from 'lucide-react';
 import Button from '../ui/button';
 
 export default function HotelCard({ hotel, isFavorite, onToggleFavorite }) {
-  const [imageIndex, setImageIndex] = React.useState(0);
-  const totalImages = hotel.images.length;
-
-  const handlePrevious = () => {
-    setImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
-  };
-
-  const handleNext = () => {
-    setImageIndex((prev) => (prev + 1) % totalImages);
-  };
-
   return (
     <div className="bg-white/5 backdrop-blur border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
       <div className="grid gap-0 lg:grid-cols-[2fr,3fr,1.5fr]">
         <div className="relative">
           <img
-            src={hotel.images[imageIndex]}
+            src={hotel.images && hotel.images.length > 0 ? hotel.images[0] : 'https://images.pexels.com/photos/261395/pexels-photo-261395.jpeg?auto=compress&cs=tinysrgb&w=1200'}
             alt={hotel.name}
-            className="h-full w-full object-cover"
+            className="h-48 w-full object-cover rounded-t-3xl"
           />
           <button
-            className="absolute top-3 right-3 bg-black/40 text-white p-2 rounded-full"
+            className="absolute top-3 right-3 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition"
             onClick={() => onToggleFavorite(hotel.id)}
           >
             <Heart
               className={`w-5 h-5 ${isFavorite ? 'fill-[#e85d75]' : ''}`}
             />
           </button>
-
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
-            <button
-              onClick={handlePrevious}
-              className="bg-black/50 text-white p-2 rounded-full"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs font-semibold tracking-widest text-white">
-              {imageIndex + 1}/{totalImages}
-            </span>
-            <button
-              onClick={handleNext}
-              className="bg-black/50 text-white p-2 rounded-full"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
 
           {hotel.newBadge && (
             <div className="absolute top-3 left-3 bg-[#e85d75] text-white text-xs font-semibold px-3 py-1 rounded-full">
