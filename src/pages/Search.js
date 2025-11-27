@@ -248,28 +248,8 @@ export default function Search() {
 
   const handleSearch = (searchData) => {
     const session = getOrCreateSearchSession();
-    // Send to n8n webhook (fire-and-forget)
-    const payload = {
-      type: "search",
-      destination: searchData.destination,
-      adults: searchData.adults,
-      rooms: searchData.rooms,
-      timestamp: new Date().toISOString(),
-      sessionId: session.id,
-    };
 
-    console.log("Sending new search to n8n with session ID:", payload);
-
-    // Fire-and-forget: don't await the response
-    fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).catch(err => {
-      console.error("n8n webhook error:", err);
-    });
-
-    // Navigate to search page with new parameters
+    // Navigate to search page with new parameters - fetchSearchResults will handle the n8n request
     navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}&adults=${searchData.adults}&rooms=${searchData.rooms}`);
   };
 
