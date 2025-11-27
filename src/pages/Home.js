@@ -158,7 +158,8 @@ export default function Home() {
               // Store the search results and navigate to search page
               sessionStorage.setItem('searchResults', JSON.stringify(data));
               const session = getOrCreateSearchSession();
-              navigate(`/search?sessionId=${session.id}`);
+              const destination = data.destination || 'kuala-lumpur';
+              navigate(`/search?sessionId=${session.id}&destination=${encodeURIComponent(destination)}`);
               return ["I've found some great options for you! Here are the search results:"];
             }
 

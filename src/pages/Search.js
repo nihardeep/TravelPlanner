@@ -5,6 +5,7 @@ import FilterSidebar from '../components/search/FilterSidebar';
 import SortOptions from '../components/search/SortOptions';
 import HotelGrid from '../components/search/HotelGrid';
 import HotelCardSkeleton from '../components/search/HotelCardSkeleton';
+import ChatBot from '../components/ChatBot';
 import Input from '../components/ui/input';
 import Button from '../components/ui/button';
 import { MapPin, Map } from 'lucide-react';
@@ -90,11 +91,18 @@ export default function Search() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
 
-  // Get destination from URL params
-  const searchParams = new URLSearchParams(window.location.search);
-  const destination = searchParams.get('destination') || 'kuala-lumpur';
-  const destinationName = getDestinationDisplayName(destination);
-  const destinationImage = getDestinationImage(destination);
+  // Get destination from search results or URL params
+  const getCurrentDestination = () => {
+    if (searchResults?.destination) {
+      return searchResults.destination;
+    }
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get('destination') || 'kuala-lumpur';
+  };
+
+  const currentDestination = getCurrentDestination();
+  const destinationName = getDestinationDisplayName(currentDestination);
+  const destinationImage = getDestinationImage(currentDestination);
 
 
   const handleToggleFilter = (key, value) => {
@@ -106,6 +114,131 @@ export default function Search() {
       ...prev,
       [hotelId]: !prev[hotelId],
     }));
+  };
+
+  const handleChatSubmit = async (message) => {
+    const payload = {
+      type: "chat",
+      message: message,
+      destination: currentDestination || null,
+      timestamp: new Date().toISOString(),
+    };
+
+    const formatAssistantReplies = (responseData) => {
+      const replies = [];
+
+      const pushNormalized = (value) => {
+        if (value === undefined || value === null) return;
+        if (Array.isArray(value)) {
+          value.forEach(pushNormalized);
+          return;
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (trimmed) replies.push(trimmed);
+          return;
+        }
+        if (typeof value === 'object') {
+          if (value.content) {
+            pushNormalized(value.content);
+            return;
+          }
+          if (value.reply) {
+            pushNormalized(value.reply);
+            return;
+          }
+          replies.push(JSON.stringify(value, null, 2));
+          return;
+        }
+        replies.push(String(value));
+      };
+
+      const possibleFields = [
+        responseData?.reply,
+        responseData?.response,
+        responseData?.message,
+        responseData?.output,
+        responseData?.text,
+      ];
+      possibleFields.forEach(pushNormalized);
+
+      if (Array.isArray(responseData?.messages)) {
+        responseData.messages.forEach(pushNormalized);
+      }
+      if (Array.isArray(responseData?.replies)) {
+        responseData.replies.forEach(pushNormalized);
+      }
+
+      if (!replies.length) {
+        pushNormalized(responseData);
+      }
+
+      return replies;
+    };
+
+    try {
+      console.log("Sending chat message to n8n:", payload);
+
+      const response = await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("n8n response status:", response.status);
+
+      if (response.ok) {
+        const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("application/json")) {
+          // Try to parse as JSON
+          try {
+            const rawBody = await response.text();
+            if (!rawBody || !rawBody.trim()) {
+              console.warn("n8n JSON response had empty body.");
+              return ["Received response but it was empty."];
+            }
+
+            const data = JSON.parse(rawBody);
+            console.log("n8n JSON response:", data);
+
+            // Check if this is a search results response
+            if (data.action === "search_results" && data.packages) {
+              // Store the search results and navigate to search page
+              sessionStorage.setItem('searchResults', JSON.stringify(data));
+              window.location.reload(); // Reload to show new results
+              return ["I've found some great options for you! Here are the search results:"];
+            }
+
+            const replies = formatAssistantReplies(data);
+            if (replies.length) return replies;
+
+            return ["Received response but it was empty."];
+          } catch (jsonError) {
+            console.error("Failed to parse JSON response:", jsonError);
+            return ["Received response but couldn't parse it. Please check the server logs."];
+          }
+        } else {
+          // Handle plain text response
+          try {
+            const text = await response.text();
+            const cleanedText = text?.trim();
+            return cleanedText ? [cleanedText] : ["Thank you for your message! Our travel assistant will respond shortly."];
+          } catch (textError) {
+            console.error("Failed to read text response:", textError);
+            return ["Thank you for your message! Our travel assistant will respond shortly."];
+          }
+        }
+      } else {
+        console.error("n8n webhook returned error status:", response.status);
+        const errorText = await response.text().catch(() => "Unknown error");
+        console.error("Error response:", errorText);
+        return ["Sorry, I'm having trouble connecting right now. Please try again later."];
+      }
+    } catch (err) {
+      console.error("Chat n8n webhook error:", err);
+      return ["Sorry, I'm having trouble connecting right now. Please try again later."];
+    }
   };
 
   const fetchSearchResults = async (sessionId) => {
@@ -345,6 +478,8 @@ export default function Search() {
           </div>
         </div>
       </main>
+
+      <ChatBot onChatSubmit={handleChatSubmit} />
     </div>
   );
 }
