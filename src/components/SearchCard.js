@@ -14,6 +14,7 @@ export default function SearchCard({
   className = ''
 }) {
   const [destination, setDestination] = useState('');
+  const [adults, setAdults] = useState(2);
   const [rooms, setRooms] = useState(1);
 
   const handleSearch = () => {
@@ -23,7 +24,7 @@ export default function SearchCard({
     }
     onSearch({
       destination,
-      adults: 2, // Default adults
+      adults: adults,
       rooms: rooms
     });
   };
@@ -31,8 +32,8 @@ export default function SearchCard({
   const isCompact = variant === 'compact';
 
   return (
-    <div className={`bg-gradient-to-r from-purple-500 via-pink-500 to-pink-600 rounded-2xl shadow-2xl ${isCompact ? 'py-4 px-6' : 'p-8'} max-w-7xl mx-auto ${className}`}>
-      <div className={`flex gap-4 ${isCompact ? 'flex-col sm:flex-row' : 'flex-row'} items-end`}>
+    <div className={`bg-gradient-to-r from-purple-500 via-pink-500 to-pink-600 rounded-2xl shadow-2xl ${isCompact ? 'py-3 px-4' : 'py-6 px-6'} max-w-7xl mx-auto ${className}`}>
+      <div className={`flex gap-3 ${isCompact ? 'flex-col sm:flex-row' : 'flex-row'} items-end`}>
         <div className="flex-1">
           <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
             Location
@@ -54,7 +55,21 @@ export default function SearchCard({
           )}
         </div>
 
-        <div className={isCompact ? 'w-full sm:w-32' : 'w-32 flex-shrink-0'}>
+        <div className={isCompact ? 'w-full sm:w-24' : 'w-24'}>
+          <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
+            Adults
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={adults}
+            onChange={(e) => setAdults(Number(e.target.value) || 1)}
+            className={`w-full rounded-lg text-gray-800 font-medium outline-none focus:ring-2 focus:ring-purple-300 ${isCompact ? 'px-3 py-2 text-sm' : 'px-4 py-3'}`}
+          />
+        </div>
+
+        <div className={isCompact ? 'w-full sm:w-20' : 'w-20'}>
           <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
             Rooms
           </label>
