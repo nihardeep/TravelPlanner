@@ -245,7 +245,7 @@ export default function Search() {
     setIsLoading(true);
     try {
       const payload = {
-        type: "get_search_results",
+        type: "search",
       };
 
       // Only include sessionId if it exists
