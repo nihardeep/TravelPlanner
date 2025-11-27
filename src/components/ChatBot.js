@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react';
 import ChatMessageSkeleton from './ChatMessageSkeleton';
 
-const INITIAL_MESSAGES = [
-  {
-    role: 'assistant',
-    content:
-      "Hi! I'm your Trip Planner assistant. Tell me about your dream trip!",
-  },
-];
-
 const createChatId = () =>
   `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-export default function ChatBot({ onChatSubmit }) {
+export default function ChatBot({ onChatSubmit, initialMessage }) {
+  const defaultMessage = "Hi! I'm your Trip Planner assistant. Tell me about your dream trip!";
+  const messageToUse = initialMessage || defaultMessage;
+
+  const INITIAL_MESSAGES = [
+    {
+      role: 'assistant',
+      content: messageToUse,
+    },
+  ];
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState(() => [...INITIAL_MESSAGES]);
   const [input, setInput] = useState('');

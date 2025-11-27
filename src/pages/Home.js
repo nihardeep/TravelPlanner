@@ -224,7 +224,11 @@ export default function Home() {
         </div>
       </main>
 
-      <ChatBot key="home-chat" onChatSubmit={handleChatSubmit} />
+      <ChatBot
+        key="home-chat"
+        onChatSubmit={handleChatSubmit}
+        initialMessage="Hi! I'm your Trip Planner assistant. Tell me about your dream trip!"
+      />
     </div>
   );
 }

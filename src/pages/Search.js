@@ -489,7 +489,11 @@ export default function Search() {
         </div>
       </main>
 
-      <ChatBot key="search-chat" onChatSubmit={handleChatSubmit} />
+      <ChatBot
+        key="search-chat"
+        onChatSubmit={handleChatSubmit}
+        initialMessage={`I am your chat assistant and I am here to plan your trip to ${destinationName}!`}
+      />
     </div>
   );
 }
