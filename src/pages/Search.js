@@ -311,7 +311,7 @@ export default function Search() {
               hotels={filteredHotels}
               favorites={favorites}
               onToggleFavorite={handleToggleFavorite}
-              isLoading={isLoading && !searchResults}
+              isLoading={!searchResults}
             />
 
 
