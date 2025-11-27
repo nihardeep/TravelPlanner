@@ -321,6 +321,8 @@ export default function Search() {
 
   const filteredHotels = searchResults ? transformN8nData(searchResults) : HOTEL_DATA;
 
+  console.log("Search page render - searchResults:", !!searchResults, "isLoading:", isLoading, "showing shimmer:", !searchResults);
+
   // Handle scroll for sticky search widget
   React.useEffect(() => {
     const handleScroll = () => {
@@ -444,7 +446,7 @@ export default function Search() {
               hotels={filteredHotels}
               favorites={favorites}
               onToggleFavorite={handleToggleFavorite}
-              isLoading={!searchResults}
+              isLoading={!searchResults || isLoading}
             />
 
 
