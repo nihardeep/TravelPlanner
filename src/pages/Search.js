@@ -244,14 +244,20 @@ export default function Search() {
   const fetchSearchResults = async (sessionId) => {
     setIsLoading(true);
     try {
+      // Get search parameters from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const destination = urlParams.get('destination') || 'kuala-lumpur';
+      const adults = parseInt(urlParams.get('adults')) || 2;
+      const rooms = parseInt(urlParams.get('rooms')) || 1;
+
       const payload = {
         type: "search",
+        destination: destination,
+        adults: adults,
+        rooms: rooms,
+        timestamp: new Date().toISOString(),
+        sessionId: sessionId,
       };
-
-      // Only include sessionId if it exists
-      if (sessionId) {
-        payload.sessionId = sessionId;
-      }
 
       const response = await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
         method: "POST",

@@ -57,9 +57,9 @@ export default function Home() {
       console.error("n8n webhook error:", err);
     }
 
-    // Navigate to search page with session ID and destination
+    // Navigate to search page with all search parameters
     console.log("Navigating to search page immediately");
-    navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}`);
+    navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}&adults=${searchData.adults}&rooms=${searchData.rooms}`);
   };
 
   const handleDestinationClick = (destination) => {
