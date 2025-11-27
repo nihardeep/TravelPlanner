@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import SearchCard from '../components/SearchCard';
 import FilterSidebar from '../components/search/FilterSidebar';
@@ -10,6 +11,7 @@ import Input from '../components/ui/input';
 import Button from '../components/ui/button';
 import { MapPin, Map } from 'lucide-react';
 import { getDestinationDisplayName, getDestinationImage } from '../utils/destinations';
+import { getOrCreateSearchSession } from '../lib/session';
 
 const INITIAL_FILTERS = {
   payAtHotel: true,
@@ -82,6 +84,7 @@ const HOTEL_DATA = [
 
 
 export default function Search() {
+  const navigate = useNavigate();
   const [priceRange, setPriceRange] = React.useState([0, 2039410]);
   const [filters, setFilters] = React.useState(INITIAL_FILTERS);
   const [sortOption, setSortOption] = React.useState('best');
@@ -243,6 +246,33 @@ export default function Search() {
     }
   };
 
+  const handleSearch = (searchData) => {
+    const session = getOrCreateSearchSession();
+    // Send to n8n webhook (fire-and-forget)
+    const payload = {
+      type: "search",
+      destination: searchData.destination,
+      adults: searchData.adults,
+      rooms: searchData.rooms,
+      timestamp: new Date().toISOString(),
+      sessionId: session.id,
+    };
+
+    console.log("Sending new search to n8n with session ID:", payload);
+
+    // Fire-and-forget: don't await the response
+    fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).catch(err => {
+      console.error("n8n webhook error:", err);
+    });
+
+    // Navigate to search page with new parameters
+    navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}&adults=${searchData.adults}&rooms=${searchData.rooms}`);
+  };
+
   const fetchSearchResults = async (sessionId) => {
     setIsLoading(true);
     try {
@@ -349,7 +379,7 @@ export default function Search() {
 
       {/* Sticky Search Widget */}
       <div className={`transition-all duration-300 ${isScrolled ? 'sticky top-0 z-40 shadow-lg bg-[#1a1530]/95 backdrop-blur' : ''}`}>
-        <SearchCard variant="compact" className="mb-0" onSearch={() => {}} />
+        <SearchCard variant="compact" className="mb-0" onSearch={handleSearch} />
       </div>
 
       {/* Dynamic Heading Section */}
