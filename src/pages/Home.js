@@ -45,6 +45,8 @@ export default function Home() {
       sessionId: session.id,
     };
 
+    console.log("Sending search to n8n with session ID:", payload);
+
     try {
       await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
         method: "POST",
