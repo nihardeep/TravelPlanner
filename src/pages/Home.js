@@ -11,21 +11,25 @@ const DESTINATIONS = [
     name: "Trips to Bali",
     image: "https://images.pexels.com/photos/3714902/pexels-photo-3714902.jpeg?auto=compress&cs=tinysrgb&w=600",
     description: "Tropical Paradise",
+    destination: "bali",
   },
   {
     name: "Trips to Kuala Lumpur",
     image: "https://images.pexels.com/photos/1619317/pexels-photo-1619317.jpeg?auto=compress&cs=tinysrgb&w=600",
     description: "Modern Metropolis",
+    destination: "kuala-lumpur",
   },
   {
     name: "Trips to Bangkok",
     image: "https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=600",
     description: "City of Angels",
+    destination: "bangkok",
   },
   {
     name: "Trips to Singapore",
     image: "https://images.pexels.com/photos/1534993/pexels-photo-1534993.jpeg?auto=compress&cs=tinysrgb&w=600",
     description: "Lion City",
+    destination: "singapore",
   },
 ];
 
@@ -61,10 +65,33 @@ export default function Home() {
     navigate(`/search?sessionId=${session.id}&destination=${searchData.destination}&adults=${searchData.adults}&rooms=${searchData.rooms}`);
   };
 
-  const handleDestinationClick = (destination) => {
-    setSelectedDestination(destination);
-    // Navigate to search with destination
-    navigate(`/search?destination=${destination}`);
+  const handleDestinationClick = async (destinationValue) => {
+    const session = getOrCreateSearchSession();
+
+    // Send search request to n8n with default values
+    const payload = {
+      type: "search",
+      destination: destinationValue,
+      adults: 1, // Default 1 adult
+      rooms: 1,  // Default 1 room
+      timestamp: new Date().toISOString(),
+      sessionId: session.id,
+    };
+
+    console.log("Sending destination card search to n8n:", payload);
+
+    try {
+      await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Destination card n8n webhook error:", err);
+    }
+
+    // Navigate to search page with destination
+    navigate(`/search?sessionId=${session.id}&destination=${destinationValue}`);
   };
 
   const handleChatSubmit = async (message) => {
@@ -218,7 +245,7 @@ export default function Home() {
               name={dest.name}
               image={dest.image}
               description={dest.description}
-              onClick={() => handleDestinationClick(dest.name)}
+              onClick={() => handleDestinationClick(dest.destination)}
             />
           ))}
         </div>
