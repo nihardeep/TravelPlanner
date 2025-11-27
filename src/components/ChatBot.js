@@ -46,11 +46,7 @@ export default function ChatBot({ onChatSubmit }) {
   };
 
   const handleSend = async () => {
-    console.log("ChatBot handleSend called, input:", input, "isLoading:", isLoading);
-    if (!input.trim() || isLoading) {
-      console.log("ChatBot handleSend blocked - input empty or loading");
-      return;
-    }
+    if (!input.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: input };
     const messageContent = input;
@@ -152,10 +148,7 @@ export default function ChatBot({ onChatSubmit }) {
               <input
                 type="text"
                 value={input}
-                onChange={(e) => {
-                  console.log('Input changing to:', e.target.value);
-                  setInput(e.target.value);
-                }}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-gray-900 bg-white placeholder-gray-500"
