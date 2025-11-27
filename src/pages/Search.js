@@ -6,7 +6,7 @@ import SortOptions from '../components/search/SortOptions';
 import HotelGrid from '../components/search/HotelGrid';
 import Input from '../components/ui/input';
 import Button from '../components/ui/button';
-import { MapPin, Map, Car } from 'lucide-react';
+import { MapPin, Map } from 'lucide-react';
 import { getDestinationDisplayName, getDestinationImage } from '../utils/destinations';
 
 const INITIAL_FILTERS = {
@@ -78,32 +78,6 @@ const HOTEL_DATA = [
   },
 ];
 
-const CAR_DATA = [
-  {
-    id: 'car-1',
-    name: 'Urban Glide Sedan',
-    type: 'Sedan · Automatic · 5 seats',
-    price: 'Rs. 3,499 / day',
-    image:
-      'https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=800',
-  },
-  {
-    id: 'car-2',
-    name: 'EcoRide Hatchback',
-    type: 'Hatchback · Automatic · 4 seats',
-    price: 'Rs. 2,199 / day',
-    image:
-      'https://images.pexels.com/photos/1149831/pexels-photo-1149831.jpeg?auto=compress&cs=tinysrgb&w=800',
-  },
-  {
-    id: 'car-3',
-    name: 'Summit Explorer SUV',
-    type: 'SUV · Automatic · 7 seats',
-    price: 'Rs. 4,950 / day',
-    image:
-      'https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg?auto=compress&cs=tinysrgb&w=800',
-  },
-];
 
 export default function Search() {
   const [priceRange, setPriceRange] = React.useState([0, 2039410]);
@@ -338,57 +312,6 @@ export default function Search() {
               onToggleFavorite={handleToggleFavorite}
             />
 
-            <section className="space-y-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.4em] text-white/60">
-                    On-the-go
-                  </p>
-                  <h3 className="text-2xl font-semibold">Popular cars in KL</h3>
-                  <p className="text-white/70 text-sm">
-                    Mock rates in INR — swap with live inventory later.
-                  </p>
-                </div>
-                <Button variant="secondary" className="w-full sm:w-auto">
-                  View all cars
-                </Button>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {CAR_DATA.map((car) => (
-                  <div
-                    key={car.id}
-                    className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-xl flex flex-col lg:flex-row"
-                  >
-                    <img
-                      src={car.image}
-                      alt={car.name}
-                      className="h-40 w-full object-cover lg:w-44"
-                    />
-                    <div className="p-5 flex flex-col gap-3 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-lg font-semibold">{car.name}</h4>
-                        <Car className="w-5 h-5 text-[#e879f9]" />
-                      </div>
-                      <p className="text-sm text-white/70">{car.type}</p>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs uppercase tracking-widest text-white/60">
-                            From
-                          </p>
-                          <p className="text-xl font-bold text-white">
-                            {car.price}
-                          </p>
-                        </div>
-                        <Button variant="accent" className="text-sm">
-                          Reserve
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="bg-[#ff8b5f]/20 border border-[#ff8b5f]/30 rounded-3xl p-6">

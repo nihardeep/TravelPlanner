@@ -14,16 +14,7 @@ export default function SearchCard({
   className = ''
 }) {
   const [destination, setDestination] = useState('');
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState('2-adults');
-
-  const guestOptions = [
-    { value: '1-adult', label: '1 adult' },
-    { value: '2-adults', label: '2 adults' },
-    { value: '3-adults', label: '3 adults' },
-    { value: 'family', label: 'Family' },
-  ];
+  const [rooms, setRooms] = useState(1);
 
   const handleSearch = () => {
     if (!destination) {
@@ -32,10 +23,8 @@ export default function SearchCard({
     }
     onSearch({
       destination,
-      checkIn,
-      checkOut,
-      guests: guests.split('-')[0], // Extract number
-      rooms: 1
+      adults: 2, // Default adults
+      rooms: rooms
     });
   };
 
@@ -43,8 +32,8 @@ export default function SearchCard({
 
   return (
     <div className={`bg-gradient-to-r from-purple-500 via-pink-500 to-pink-600 rounded-2xl shadow-2xl ${isCompact ? 'py-4 px-6' : 'p-8'} max-w-7xl mx-auto ${className}`}>
-      <div className={`grid gap-4 ${isCompact ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-4'} items-end`}>
-        <div className={isCompact ? 'md:col-span-1' : 'md:col-span-2'}>
+      <div className={`flex gap-4 ${isCompact ? 'flex-col sm:flex-row' : 'flex-col md:flex-row'} items-end`}>
+        <div className="flex-1">
           <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
             Location
           </label>
@@ -65,51 +54,24 @@ export default function SearchCard({
           )}
         </div>
 
-        <div>
+        <div className={isCompact ? 'w-full sm:w-32' : 'w-full md:w-32'}>
           <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
-            Check-in
+            Rooms
           </label>
           <input
-            type="date"
-            value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
+            type="number"
+            min={1}
+            max={10}
+            value={rooms}
+            onChange={(e) => setRooms(Number(e.target.value) || 1)}
             className={`w-full rounded-lg text-gray-800 font-medium outline-none focus:ring-2 focus:ring-purple-300 ${isCompact ? 'px-3 py-2 text-sm' : 'px-4 py-3'}`}
           />
         </div>
 
-        <div>
-          <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
-            Check-out
-          </label>
-          <input
-            type="date"
-            value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            className={`w-full rounded-lg text-gray-800 font-medium outline-none focus:ring-2 focus:ring-purple-300 ${isCompact ? 'px-3 py-2 text-sm' : 'px-4 py-3'}`}
-          />
-        </div>
-
-        <div>
-          <label className={`block text-white font-semibold mb-1 ${isCompact ? 'text-xs' : 'text-sm'}`}>
-            Guests
-          </label>
-          <select
-            value={guests}
-            onChange={(e) => setGuests(e.target.value)}
-            className={`w-full rounded-lg text-gray-800 font-medium outline-none focus:ring-2 focus:ring-purple-300 ${isCompact ? 'px-3 py-2 text-sm' : 'px-4 py-3'}`}
-          >
-            {guestOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className={`flex justify-center ${isCompact ? 'md:col-span-1' : ''}`}>
+        <div className="flex-shrink-0">
           <button
             onClick={handleSearch}
-            className={`flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition ${isCompact ? 'px-4 py-2 text-sm' : 'px-6 py-3'}`}
+            className={`flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition whitespace-nowrap ${isCompact ? 'px-4 py-2 text-sm w-full sm:w-auto' : 'px-6 py-3'}`}
           >
             <Search className={isCompact ? "w-4 h-4" : "w-5 h-5"} />
             Search
