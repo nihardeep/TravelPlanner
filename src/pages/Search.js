@@ -260,6 +260,9 @@ export default function Search() {
   };
 
   const handleSearch = (searchData) => {
+    // Show loading dialog immediately when search is initiated
+    setIsLoading(true);
+
     const session = getOrCreateSearchSession();
 
     // Navigate to search page with new parameters - fetchSearchResults will handle the n8n request
@@ -296,6 +299,8 @@ export default function Search() {
 
         if (data.action === "search_results" && data.packages) {
           setSearchResults(data);
+          setIsLoading(false); // Hide loading dialog as soon as results are set
+          return; // Exit early since we have results
         }
       } else {
         console.error("Failed to fetch search results");
@@ -310,6 +315,9 @@ export default function Search() {
   // Check for stored search results from chat and handle URL parameter changes
   React.useEffect(() => {
     const handleSearchParamsChange = () => {
+      // Show loading dialog initially
+      setIsLoading(true);
+
       // Check if we have stored search results from chat
       const storedResults = sessionStorage.getItem('searchResults');
       if (storedResults) {
@@ -317,9 +325,11 @@ export default function Search() {
           const parsedResults = JSON.parse(storedResults);
           setSearchResults(parsedResults);
           sessionStorage.removeItem('searchResults'); // Clear after use
+          setIsLoading(false); // Hide loading dialog when results are shown
           return;
         } catch (error) {
           console.error('Error parsing stored search results:', error);
+          setIsLoading(false); // Hide loading dialog even on error
         }
       }
 
@@ -329,6 +339,8 @@ export default function Search() {
       // Fetch search results with current parameters
       if (params.sessionId) {
         fetchSearchResults(params.sessionId);
+      } else {
+        setIsLoading(false); // Hide loading if no session ID
       }
     };
 
