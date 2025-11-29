@@ -1,3 +1,4 @@
+// Reverted to working state - removed dynamic filter changes to fix blank screen issue
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
