@@ -7,6 +7,7 @@ import SortOptions from '../components/search/SortOptions';
 import HotelGrid from '../components/search/HotelGrid';
 import HotelCardSkeleton from '../components/search/HotelCardSkeleton';
 import ChatBot from '../components/ChatBot';
+import SearchLoadingDialog from '../components/SearchLoadingDialog';
 import Input from '../components/ui/input';
 import Button from '../components/ui/button';
 import { MapPin, Map } from 'lucide-react';
@@ -374,6 +375,9 @@ export default function Search() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0a24] via-[#1a1530] to-[#2d1b69] text-white">
       <Header />
+
+      {/* Search Loading Dialog */}
+      <SearchLoadingDialog open={isLoading} />
 
       {/* Sticky Search Widget */}
       <div className={`transition-all duration-300 ${isScrolled ? 'sticky top-0 z-40 shadow-lg bg-[#1a1530]/95 backdrop-blur' : ''}`}>

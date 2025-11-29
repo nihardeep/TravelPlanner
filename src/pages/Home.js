@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import SearchCard from '../components/SearchCard';
 import DestinationCard from '../components/DestinationCard';
 import ChatBot from '../components/ChatBot';
+import SearchLoadingDialog from '../components/SearchLoadingDialog';
 import { getOrCreateSearchSession } from '../lib/session';
 
 const DESTINATIONS = [
@@ -36,6 +37,7 @@ const DESTINATIONS = [
 export default function Home() {
   const navigate = useNavigate();
   const [selectedDestination, setSelectedDestination] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSearch = (searchData) => {
     const session = getOrCreateSearchSession();
@@ -111,6 +113,7 @@ export default function Home() {
     };
 
     try {
+      setIsLoading(true);
       console.log("Sending chat message to n8n:", payload);
 
       const response = await fetch("https://ndsharma.app.n8n.cloud/webhook/travel-search", {
@@ -175,12 +178,17 @@ export default function Home() {
     } catch (err) {
       console.error("Chat n8n webhook error:", err);
       return ["Sorry, I'm having trouble connecting right now. Please try again later."];
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#2d1b69] to-[#1a1530]">
       <Header />
+
+      {/* Search Loading Dialog */}
+      <SearchLoadingDialog open={isLoading} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
