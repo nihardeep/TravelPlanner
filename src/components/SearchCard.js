@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 
 const DESTINATIONS = [
@@ -11,11 +11,28 @@ const DESTINATIONS = [
 export default function SearchCard({
   onSearch,
   variant = 'full', // 'full' or 'compact'
-  className = ''
+  className = '',
+  initialDestination = '',
+  initialAdults = 2,
+  initialRooms = 1
 }) {
-  const [destination, setDestination] = useState('');
-  const [adults, setAdults] = useState(2);
-  const [rooms, setRooms] = useState(1);
+  const [destination, setDestination] = useState(initialDestination);
+  const [adults, setAdults] = useState(initialAdults);
+  const [rooms, setRooms] = useState(initialRooms);
+
+  // Initialize from URL params if we're on the search page
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname === '/search') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlDestination = urlParams.get('destination');
+      const urlAdults = parseInt(urlParams.get('adults'));
+      const urlRooms = parseInt(urlParams.get('rooms'));
+
+      if (urlDestination) setDestination(urlDestination);
+      if (!isNaN(urlAdults)) setAdults(urlAdults);
+      if (!isNaN(urlRooms)) setRooms(urlRooms);
+    }
+  }, []);
 
   const handleSearch = () => {
     if (!destination) {

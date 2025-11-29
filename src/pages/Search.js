@@ -103,7 +103,18 @@ export default function Search() {
     return searchParams.get('destination') || 'kuala-lumpur';
   };
 
+  const getCurrentSearchParams = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return {
+      destination: searchParams.get('destination') || 'kuala-lumpur',
+      adults: parseInt(searchParams.get('adults')) || 2,
+      rooms: parseInt(searchParams.get('rooms')) || 1,
+      sessionId: searchParams.get('sessionId')
+    };
+  };
+
   const currentDestination = getCurrentDestination();
+  const currentSearchParams = getCurrentSearchParams();
   const destinationName = getDestinationDisplayName(currentDestination);
   const destinationImage = getDestinationImage(currentDestination);
 
@@ -294,27 +305,44 @@ export default function Search() {
     }
   };
 
-  // Check for stored search results from chat
+  // Check for stored search results from chat and handle URL parameter changes
   React.useEffect(() => {
-    // Check if we have stored search results from chat
-    const storedResults = sessionStorage.getItem('searchResults');
-    if (storedResults) {
-      try {
-        const parsedResults = JSON.parse(storedResults);
-        setSearchResults(parsedResults);
-        sessionStorage.removeItem('searchResults'); // Clear after use
-        return;
-      } catch (error) {
-        console.error('Error parsing stored search results:', error);
+    const handleSearchParamsChange = () => {
+      // Check if we have stored search results from chat
+      const storedResults = sessionStorage.getItem('searchResults');
+      if (storedResults) {
+        try {
+          const parsedResults = JSON.parse(storedResults);
+          setSearchResults(parsedResults);
+          sessionStorage.removeItem('searchResults'); // Clear after use
+          return;
+        } catch (error) {
+          console.error('Error parsing stored search results:', error);
+        }
       }
-    }
 
-    // Get sessionId from URL params
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('sessionId');
+      // Get current search parameters
+      const params = getCurrentSearchParams();
 
-    // Fetch search results with sessionId
-    fetchSearchResults(sessionId);
+      // Fetch search results with current parameters
+      if (params.sessionId) {
+        fetchSearchResults(params.sessionId);
+      }
+    };
+
+    // Initial load
+    handleSearchParamsChange();
+
+    // Listen for navigation changes (back/forward button, programatic navigation)
+    const handlePopState = () => {
+      handleSearchParamsChange();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   const transformN8nData = (data) => {
@@ -359,7 +387,14 @@ export default function Search() {
 
       {/* Sticky Search Widget */}
       <div className={`transition-all duration-300 ${isScrolled ? 'sticky top-0 z-40 shadow-lg bg-[#1a1530]/95 backdrop-blur' : ''}`}>
-        <SearchCard variant="compact" className="mb-0" onSearch={handleSearch} />
+        <SearchCard
+          variant="compact"
+          className="mb-0"
+          onSearch={handleSearch}
+          initialDestination={currentSearchParams.destination}
+          initialAdults={currentSearchParams.adults}
+          initialRooms={currentSearchParams.rooms}
+        />
       </div>
 
       {/* Dynamic Heading Section */}
