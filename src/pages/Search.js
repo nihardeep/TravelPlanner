@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import SearchCard from '../components/SearchCard';
 import FilterSidebar from '../components/search/FilterSidebar';
@@ -85,6 +85,7 @@ const HOTEL_DATA = [
 
 export default function Search() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [priceRange, setPriceRange] = React.useState([0, 2039410]);
   const [filters, setFilters] = React.useState(INITIAL_FILTERS);
   const [sortOption, setSortOption] = React.useState('best');
@@ -330,20 +331,9 @@ export default function Search() {
       }
     };
 
-    // Initial load
+    // Execute when location.search changes (URL parameters change)
     handleSearchParamsChange();
-
-    // Listen for navigation changes (back/forward button, programatic navigation)
-    const handlePopState = () => {
-      handleSearchParamsChange();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
+  }, [location.search]); // Depend on location.search to trigger on URL parameter changes
 
   const transformN8nData = (data) => {
     return data.packages.map((pkg, index) => ({
