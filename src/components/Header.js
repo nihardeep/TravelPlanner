@@ -1,12 +1,19 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header() {
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   return (
     <nav className="bg-[#1a1530] border-b border-purple-500/30 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
             <MapPin className="w-8 h-8 text-[#e879f9]" />
             <h1 className="text-2xl font-bold text-[#e879f9]">
               TravelMate
